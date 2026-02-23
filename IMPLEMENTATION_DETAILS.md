@@ -176,7 +176,7 @@ if LoyaltyService:
             user=request.user,
             points_amount=total_points_to_award,  # FIXED: All points at once
             reference_id=booking_reference,       # FIXED: Both references
-            description=f"Flight booking - {booking_reference} (2% of ${usd_total_payment:.2f}) [TOTAL_PAYMENT]"
+            description=f"Flight booking - {booking_reference} (4% of ${usd_total_payment:.2f}) [TOTAL_PAYMENT]"
         )
 ```
 
@@ -262,7 +262,7 @@ All fixes verified working:
 ```
 ✅ Return flight times display correctly
 ✅ Total payment processes both flights
-✅ Loyalty points = 2% of complete payment
+✅ Loyalty points = 4% of complete payment
 ✅ SAGA checkboxes toggle visibility
 ✅ One-way bookings still work
 ✅ Booking history shows both flights

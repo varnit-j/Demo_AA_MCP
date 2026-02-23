@@ -140,7 +140,7 @@ const getFareValue = (fareStr) => {
    - Points awarded for both tickets after payment confirmation
 5. **Confirmation**:
    - Both tickets created with CONFIRMED status
-   - Loyalty points awarded for both flights (2% of total fare)
+   - Loyalty points awarded for both flights (4% of total fare)
 
 ---
 

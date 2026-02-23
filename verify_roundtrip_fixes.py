@@ -128,16 +128,16 @@ print("-" * 80)
 total_usd_fare = flight1_data['economy_fare'] + flight2_data['economy_fare']
 print(f"Total fare (USD): ${total_usd_fare}")
 
-# Calculate points (2% of fare as points)
-total_points = int(total_usd_fare * 0.02)
+# Calculate points (0.5 points per $1)
+total_points = int(total_usd_fare * 0.5)
 points_value = total_points * 0.01  # 1 point = $0.01
 
-print(f"Points earned (2%): {total_points} points")
+print(f"Points earned (0.5 per $1): {total_points} points")
 print(f"Points value: ${points_value:.2f}")
 
 # Breakdown per flight
-flight1_points = int(flight1_data['economy_fare'] * 0.02)
-flight2_points = int(flight2_data['economy_fare'] * 0.02)
+flight1_points = int(flight1_data['economy_fare'] * 0.5)
+flight2_points = int(flight2_data['economy_fare'] * 0.5)
 
 print(f"\nBreakdown:")
 print(f"  Flight1 ({flight1_data['economy_fare']}): {flight1_points} points")

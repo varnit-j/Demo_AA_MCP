@@ -124,7 +124,7 @@ Applied identical fixes for the sync booking result path to ensure consistency.
 Loyalty points are already correctly aligned:
 
 1. **Points Earning:** [flight/views.py](flight/views.py) Lines 620-643
-   - Calculates 2% of USD fare amount
+   - Calculates 4% of USD fare amount
    - Awards points for BOTH flights in round trip
    - Separate transactions for each flight (ticket)
 
@@ -157,9 +157,9 @@ Loyalty points are already correctly aligned:
    - Both flights should be included in booking
 
 3. **Points Calculation:**
-   - Outbound points: int($150 * 0.02) = 3 points
-   - Return points: int($140 * 0.02) = 2 points
-   - Total points earned: 5 points
+   - Outbound points: int($150 * 0.04) = 6 points
+   - Return points: int($140 * 0.04) = 5 points
+   - Total points earned: 11 points
    - Points value: $0.05
 
 4. **Redemption:**

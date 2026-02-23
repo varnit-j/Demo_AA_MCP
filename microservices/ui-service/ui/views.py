@@ -418,6 +418,10 @@ def book(request):
             print(f"[DEBUG] SAGA Demo Mode: {saga_demo_mode}")
             print(f"[DEBUG] POST data contains saga_demo_mode: {'saga_demo_mode' in request.POST}")
             print(f"[DEBUG] Raw saga_demo_mode value: '{request.POST.get('saga_demo_mode')}'")
+            print(f"[ROUTING_DEBUG] ===== ROUTING DECISION POINT =====")
+            print(f"[ROUTING_DEBUG] saga_demo_mode: {saga_demo_mode}")
+            print(f"[ROUTING_DEBUG] Should go to SAGA results: {saga_demo_mode}")
+            print(f"[ROUTING_DEBUG] Should go to payment page: {not saga_demo_mode}")
             
             # Check if required flight data is present
             flight1_id = request.POST.get('flight1')
@@ -605,18 +609,18 @@ def book(request):
                     'error_type': 'connection'
                 })
 
-            # POC IMPLEMENTATION: Always redirect to results page immediately for live monitoring
+            # ROUTING DECISION: Check if SAGA demo mode is enabled for proper navigation
             if booking_result.get('accepted') and booking_result.get('correlation_id'):
                 correlation_id = booking_result.get('correlation_id')
-                print(f"[POC_IMPLEMENTATION] ===== IMMEDIATE NAVIGATION IMPLEMENTED =====")
-                print(f"[POC_IMPLEMENTATION] correlation_id: {correlation_id}")
-                print(f"[POC_IMPLEMENTATION] SAGA started in background, navigating immediately to results page")
-                print(f"[POC_IMPLEMENTATION] User will see real-time microservice logs streaming")
                 
-                # POC: Always redirect to SAGA results for live monitoring (both demo and normal mode)
-                failure_type = 'confirmbooking'  # Default for normal bookings
                 if saga_demo_mode:
+                    print(f"[ROUTING_DEBUG] SAGA Demo Mode enabled - Redirecting to SAGA results page")
+                    print(f"[POC_IMPLEMENTATION] ===== SAGA DEMO MODE NAVIGATION =====")
+                    print(f"[POC_IMPLEMENTATION] correlation_id: {correlation_id}")
+                    print(f"[POC_IMPLEMENTATION] SAGA started in background, navigating to results page")
+                    
                     # Determine failure type from booking data for demo
+                    failure_type = 'confirmbooking'  # Default
                     if booking_data.get('simulate_reserveseat_fail'):
                         failure_type = 'reserveseat'
                     elif booking_data.get('simulate_authorizepayment_fail'):
@@ -625,11 +629,74 @@ def book(request):
                         failure_type = 'awardmiles'
                     elif booking_data.get('simulate_confirmbooking_fail'):
                         failure_type = 'confirmbooking'
-                
-                redirect_url = reverse("saga_results") + f"?correlation_id={correlation_id}&demo={str(saga_demo_mode).lower()}&failure_type={failure_type}"
-                print(f"[POC_IMPLEMENTATION] Redirecting to live monitoring page: {redirect_url}")
-                print(f"[TIMING DEBUG] IMMEDIATE NAVIGATION - Redirecting at {timezone.now()}")
-                return HttpResponseRedirect(redirect_url)
+                    
+                    redirect_url = reverse("saga_results") + f"?correlation_id={correlation_id}&demo=true&failure_type={failure_type}"
+                    print(f"[POC_IMPLEMENTATION] Redirecting to live monitoring page: {redirect_url}")
+                    print(f"[TIMING DEBUG] SAGA DEMO MODE - Redirecting at {timezone.now()}")
+                    return HttpResponseRedirect(redirect_url)
+                else:
+                    # Normal Mode: Redirect to payment/transaction page
+                    print(f"[ROUTING_DEBUG] Normal Mode - Redirecting to payment page")
+                    print(f"[ROUTING_DEBUG] SAGA control checkbox NOT checked - going to transaction page")
+                    print(f"[ROUTING_DEBUG] correlation_id: {correlation_id} will be used for payment tracking")
+                    
+                    # Get flight data for payment page
+                    flight_id = booking_data.get('flight_id')
+                    flight2_id = booking_data.get('flight_id_2')
+                    
+                    flight_data = call_backend_api(f'api/flights/{flight_id}/')
+                    flight_data_2 = None
+                    if flight2_id:
+                        flight_data_2 = call_backend_api(f'api/flights/{flight2_id}/')
+                    
+                    if not flight_data:
+                        print(f"[ROUTING_DEBUG] ERROR: Could not retrieve flight data for payment")
+                        return render(request, "flight/book.html", {
+                            'error': 'Could not retrieve flight information for payment. Please try again.',
+                            'booking_data': booking_data,
+                            'error_type': 'flight_data'
+                        })
+                    
+                    # Calculate fare for payment
+                    seat_class = request.POST.get('flight1Class', 'economy')
+                    if seat_class == 'first':
+                        fare = flight_data.get('first_fare', 0)
+                        if flight_data_2:
+                            fare += flight_data_2.get('first_fare', 0)
+                    elif seat_class == 'business':
+                        fare = flight_data.get('business_fare', 0)
+                        if flight_data_2:
+                            fare += flight_data_2.get('business_fare', 0)
+                    else:
+                        fare = flight_data.get('economy_fare', 0)
+                        if flight_data_2:
+                            fare += flight_data_2.get('economy_fare', 0)
+                    
+                    total_fare = fare + FEE
+                    
+                    # Get user's loyalty points
+                    user_loyalty = loyalty_tracker.get_user_points(request.user.id)
+                    user_points = user_loyalty.get('points_balance', 0)
+                    points_value = user_points * 0.01
+                    
+                    # Prepare payment context
+                    payment_context = {
+                        'booking_reference': correlation_id,
+                        'flight': flight_data,
+                        'flight_2': flight_data_2 if flight_data_2 else None,
+                        'fare': total_fare,
+                        'ticket': correlation_id,
+                        'fee': FEE,
+                        'seat': seat_class,
+                        'user_points': user_points,
+                        'points_value': points_value,
+                        'message': 'Please complete payment to confirm your booking.',
+                        'saga_correlation_id': correlation_id
+                    }
+                    
+                    print(f"[ROUTING_DEBUG] SUCCESS: Redirecting to payment page with correlation_id: {correlation_id}")
+                    print(f"[ROUTING_DEBUG] Payment context prepared with fare: ${total_fare}")
+                    return render(request, "flight/payment.html", payment_context)
             else:
                 # Handle booking failure - redirect to payment page
                 # Get flight data for payment page

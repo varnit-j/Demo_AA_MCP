@@ -621,12 +621,12 @@ def payment(request):
                             # One way: single ticket
                             total_payment = float(ticket.total_fare)
                         
-                        # Convert to USD for points calculation (2% of amount spent = points)
+                        # Convert to USD for points calculation (0.5 points per $1 spent)
                         usd_total_payment = total_payment / 82.5  # Convert INR to USD
-                        total_points_to_award = int(usd_total_payment * 2)  # 2% of USD payment as points
+                        total_points_to_award = int(usd_total_payment * 0.5)  # 0.5 points per $1 USD payment
                         
                         safe_print(f"DEBUG: LOYALTY - Total Payment: ₹{total_payment:.2f} (${usd_total_payment:.2f})")
-                        safe_print(f"DEBUG: LOYALTY - Awarding {total_points_to_award} points (2% of ${usd_total_payment:.2f})")
+                        safe_print(f"DEBUG: LOYALTY - Awarding {total_points_to_award} points (0.5 points per ${usd_total_payment:.2f})")
                         
                         # Award ALL points in a SINGLE transaction for the entire booking
                         booking_reference = f"{ticket.ref_no}"
@@ -637,7 +637,7 @@ def payment(request):
                             user=request.user,
                             points_amount=total_points_to_award,
                             reference_id=booking_reference,
-                            description=f"Flight booking - {booking_reference} (2% of ${usd_total_payment:.2f}) [TOTAL_PAYMENT]"
+                            description=f"Flight booking - {booking_reference} (0.5 points per $1 of ${usd_total_payment:.2f}) [TOTAL_PAYMENT]"
                         )
                         safe_print(f"DEBUG: LOYALTY - Successfully awarded {total_points_to_award} points to {request.user.username} for booking: {booking_reference}")
                         

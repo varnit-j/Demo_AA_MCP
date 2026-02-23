@@ -93,7 +93,7 @@ Open browser to: `http://localhost:8000/`
 
 2. **Check Loyalty Points**
    - Points awarded for both flights
-   - Example: 9 points (2% of ~$450 USD equivalent)
+   - Example: 18 points (4% of ~$450 USD equivalent)
 
 3. **Expected Result**
    - Both tickets in "My Bookings"

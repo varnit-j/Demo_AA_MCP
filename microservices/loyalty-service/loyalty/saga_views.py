@@ -81,8 +81,8 @@ def award_miles(request):
             logger.info(f"[SAGA LOYALTY] 🔄 ROUND TRIP BOOKING DETECTED - Creating transactions for both flights")
             
             # Create first transaction for flight 1
-            miles_to_award_1 = int(float(flight_fare))
-            logger.info(f"[SAGA LOYALTY] 🏆 Flight 1: ${flight_fare} = {miles_to_award_1} miles (1:1 ratio)")
+            miles_to_award_1 = int(float(flight_fare) * 0.5)
+            logger.info(f"[SAGA LOYALTY] 🏆 Flight 1: ${flight_fare} = {miles_to_award_1} miles (0.5:1 ratio)")
             
             # Get or create loyalty account
             account, created = LoyaltyAccount.objects.get_or_create(user_id=user_id)
@@ -122,8 +122,8 @@ def award_miles(request):
             logger.info(f"[SAGA LOYALTY] 📝 Created transaction record for Flight 1: {transaction_1.transaction_id}")
             
             # Award miles for flight 2
-            miles_to_award_2 = int(float(flight_fare_2))
-            logger.info(f"[SAGA LOYALTY] 🏆 Flight 2: ${flight_fare_2} = {miles_to_award_2} miles (1:1 ratio)")
+            miles_to_award_2 = int(float(flight_fare_2) * 0.5)
+            logger.info(f"[SAGA LOYALTY] 🏆 Flight 2: ${flight_fare_2} = {miles_to_award_2} miles (0.5:1 ratio)")
             
             balance_before_flight2 = account.points_balance
             account.points_balance += miles_to_award_2
@@ -173,10 +173,10 @@ def award_miles(request):
             })
         else:
             # Single flight booking
-            # Calculate miles: 1 dollar = 1 mile
-            miles_to_award = int(float(flight_fare))
+            # Calculate miles: 0.5 points per 1 dollar
+            miles_to_award = int(float(flight_fare) * 0.5)
             
-            logger.info(f"[SAGA LOYALTY] 🏆 Calculating miles award: ${flight_fare} = {miles_to_award} miles (1:1 ratio)")
+            logger.info(f"[SAGA LOYALTY] 🏆 Calculating miles award: ${flight_fare} = {miles_to_award} miles (0.5:1 ratio)")
             
             # Get or create loyalty account with detailed logging
             account, created = LoyaltyAccount.objects.get_or_create(user_id=user_id)

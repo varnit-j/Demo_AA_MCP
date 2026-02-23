@@ -55,7 +55,7 @@ phases:
         template: loyalty/service.py
         status: implemented
         features:
-          - "Points earning: 2% of booking amount"
+          - "Points earning: 4% of booking amount"
           - "Points redemption with balance validation"
           - "Automatic tier upgrades based on points earned"
           - "Transaction history and balance management"
@@ -83,7 +83,7 @@ phases:
         template: tests/test_loyalty.py
     integration:
       - "Integrated with flight booking payment flow in flight/views.py"
-      - "Points awarded automatically on successful payment (2% of fare)"
+      - "Points awarded automatically on successful payment (4% of fare)"
       - "Points redemption available during checkout."
       - "Unicode-safe calculations and display"
 

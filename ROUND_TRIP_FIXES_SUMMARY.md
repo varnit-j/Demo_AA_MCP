@@ -82,7 +82,7 @@ LoyaltyService.earn_points(
     user=request.user,
     points_amount=total_points_to_award,
     reference_id=booking_reference,
-    description=f"Flight booking - {booking_reference} (2% of ${usd_total_payment:.2f}) [TOTAL_PAYMENT]"
+    description=f"Flight booking - {booking_reference} (4% of ${usd_total_payment:.2f}) [TOTAL_PAYMENT]"
 )
 ```
 
@@ -154,7 +154,7 @@ Payment completion
     ↓
 Loyalty Points Award
     ↓
-Calculates points from TOTAL payment (2% rule) ✓
+Calculates points from TOTAL payment (4% rule) ✓
 Awards points ONCE per complete booking ✓
 Includes both flight references ✓
     ↓
@@ -194,7 +194,7 @@ Shows total fare ✓
 ### ✅ Test 4: Loyalty Points
 1. Complete round trip booking ($270 fare)
 2. Check loyalty account
-3. **Expected**: Points awarded = 2% of $270 = 5 points (single transaction)
+3. **Expected**: Points awarded = 4% of $270 = 11 points (single transaction)
 4. **Result**: ✅ Correct points awarded
 
 ### ✅ Test 5: SAGA Checkboxes

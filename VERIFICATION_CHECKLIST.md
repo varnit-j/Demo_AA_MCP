@@ -95,7 +95,7 @@
 **Fix applied**:
 - [x] Calculate total payment: flight1_fare + flight2_fare
 - [x] Convert total to USD (÷ 82.5)
-- [x] Award points once: 2% of total_payment
+- [x] Award points once: 4% of total_payment
 - [x] Single transaction for entire booking
 - [x] Include both flight references in metadata
 
@@ -114,7 +114,7 @@
 - [x] Points calculated from total payment
 - [x] Round trip awards single transaction
 - [x] Includes both flight references
-- [x] Points = 2% of (flight1 + flight2) fare
+- [x] Points = 4% of (flight1 + flight2) fare
 - [x] Transaction logged clearly
 
 ---
@@ -212,8 +212,8 @@
 
 ### Loyalty Points Test
 - [x] Check user account
-- [x] VERIFY: Points awarded = 2% of total
-- [x] VERIFY: Example: 2% of $270 = 5-6 points
+- [x] VERIFY: Points awarded = 4% of total
+- [x] VERIFY: Example: 4% of $270 = 11 points
 - [x] VERIFY: Single transaction (not two)
 - [x] VERIFY: Both flight references in transaction
 
@@ -224,7 +224,7 @@
 - [x] Add passenger
 - [x] VERIFY: Works as before
 - [x] VERIFY: Fare = flight + fee only
-- [x] VERIFY: Points = 2% of single flight
+- [x] VERIFY: Points = 4% of single flight
 
 ---
 

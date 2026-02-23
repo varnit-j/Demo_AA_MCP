@@ -14,7 +14,7 @@
 
 ### Issue 3: Loyalty Points Only for One Flight ✅
 - **Status**: FIXED
-- **Verification**: Points = 2% of total payment (both flights combined)
+- **Verification**: Points = 4% of total payment (both flights combined)
 - **What Changed**: Points awarded once per complete booking, not per ticket
 
 ### Issue 4: SAGA Checkboxes Always Visible ✅
@@ -112,8 +112,8 @@
 2. Check points earned
 
 ✅ Expected:
-   - Points = 2% of total payment
-   - Example: 2% of $270 = 5.4 ≈ 5 points
+   - Points = 4% of total payment
+   - Example: 4% of $270 = 10.8 ≈ 11 points
    - Points showing in account balance
 ```
 
@@ -145,7 +145,7 @@
 ✅ Expected:
    - Only flight1 shown
    - Fare = Single flight fare + fee
-   - Points = 2% of that amount
+   - Points = 4% of that amount
    - Everything works as before
 ```
 
@@ -199,7 +199,7 @@ Database:
 1. Round trip search displays both flight times
 2. Fare summary shows total for both flights
 3. Payment processes full amount (both flights + fee)
-4. Loyalty points awarded = 2% of total
+4. Loyalty points awarded = 4% of total
 5. SAGA checkboxes hidden by default, toggle on button click
 6. One-way bookings still work
 7. Booking history shows all bookings correctly
