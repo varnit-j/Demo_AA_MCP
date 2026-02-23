@@ -53,7 +53,7 @@
                             </div>
                         </div>
                         <div class="col-2 middle-div">
-                            <div style="font-size: 1.2em; color: #945937;">{{ticket.booking_reference}}</div>
+                            <div style="font-size: 1.2em; color: #945937;">PNR : {{ticket.booking_reference}}</div>
                         </div>
                         <div class="col-2 middle-div">
                             <div>
@@ -66,6 +66,8 @@
                                         <div class="orange">PAY AT COUNTER</div>
                                     {% elif ticket.status == 'cancelled' %}
                                         <div class="red">CANCELLED</div>
+                                    {% elif ticket.status == 'failed' %}
+                                        <div class="red">FAILED</div>
                                     {% else %}
                                         <div class="green">{{ticket.status|upper}}</div>
                                     {% endif %}

@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Flight2 Radio Selection</title>
+</head>
+<body>
+    <h2>Test Flight2 Selection</h2>
+    
+    <div id="flight2-panel">
+        <h3>Return Flights: <span id="f2-header-time">05:05 • 07:40</span></h3>
+        
+        <label>
+            <input type="radio" class="flight2-radio" name="test2" value="37966" 
+                data-plane='Boeing 737-800' 
+                data-depart='05:05' 
+                data-arrive='07:40'
+                data-fare="150.0" 
+                checked>
+            Flight 37966
+        </label>
+        
+        <label>
+            <input type="radio" class="flight2-radio" name="test2" value="37967" 
+                data-plane='Boeing 777' 
+                data-depart='06:15' 
+                data-arrive='08:50'
+                data-fare="160.0">
+            Flight 37967
+        </label>
+    </div>
+    
+    <div id="debug-output"></div>
+    
+    <script>
+        let selectedFlight2 = null;
+        
+        function selectFlight2(radioElement) {
+            console.log("[DEBUG] selectFlight2 called with radio value:", radioElement.value);
+            console.log("[DEBUG] data-depart:", radioElement.dataset.depart);
+            console.log("[DEBUG] data-arrive:", radioElement.dataset.arrive);
+            
+            selectedFlight2 = {
+                id: radioElement.value,
+                plane: radioElement.dataset.plane || 'Unknown',
+                depart: radioElement.dataset.depart || '00:00',
+                arrive: radioElement.dataset.arrive || '00:00',
+                fare: parseFloat(radioElement.dataset.fare) || 0
+            };
+            
+            console.log("[DEBUG] selectedFlight2:", selectedFlight2);
+            
+            // Update header
+            const f2HeaderTime = document.getElementById('f2-header-time');
+            if (f2HeaderTime) {
+                const newText = selectedFlight2.depart + ' • ' + selectedFlight2.arrive;
+                f2HeaderTime.textContent = newText;
+                console.log("[DEBUG] Updated f2-header-time to:", newText);
+            }
+            
+            // Log to page
+            const output = document.getElementById('debug-output');
+            output.innerHTML += `<p>Selected: ${selectedFlight2.plane} departing ${selectedFlight2.depart} arriving ${selectedFlight2.arrive}</p>`;
+        }
+        
+        function attachFlight2Listeners() {
+            console.log("[DEBUG] Attaching flight2 radio listeners");
+            const flight2Radios = document.querySelectorAll('.flight2-radio');
+            console.log("[DEBUG] Found " + flight2Radios.length + " flight2 radios");
+            
+            flight2Radios.forEach((radio, index) => {
+                console.log("[DEBUG] Attaching to radio #" + index + " value=" + radio.value);
+                
+                radio.addEventListener('change', (e) => {
+                    if (e.target.checked) {
+                        console.log("[DEBUG] flight2 radio changed:", e.target.value);
+                        selectFlight2(e.target);
+                    }
+                });
+                
+                radio.addEventListener('click', (e) => {
+                    console.log("[DEBUG] flight2 radio clicked:", e.target.value);
+                    setTimeout(() => {
+                        if (radio.checked) {
+                            selectFlight2(e.target);
+                        }
+                    }, 10);
+                });
+            });
+            
+            // Initialize first radio
+            if (flight2Radios.length > 0) {
+                console.log("[DEBUG] Initializing first radio");
+                selectFlight2(flight2Radios[0]);
+            }
+        }
+        
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log("[DEBUG] Page loaded, attaching listeners");
+            attachFlight2Listeners();
+        });
+    </script>
+</body>
+</html>

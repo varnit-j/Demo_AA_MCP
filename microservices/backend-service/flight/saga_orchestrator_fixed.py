@@ -18,24 +18,37 @@ class SagaStep:
 
 class BookingOrchestrator:
     def __init__(self):
+        # Step order (RESTRUCTURED):
+        # 1) Miles Loyalty
+        # 2) Payment Transaction
+        # 3) Booking Done
+        # 4) Reservation Done
+        #
+        # NOTE: Per requirements, this is a control-step restructure only:
+        # - Keep existing endpoints and underlying business logic intact.
+        # - Compensation flows remain the same, but now map to the new step order.
         self.steps = [
-            SagaStep("ReserveSeat", 
-                    "http://localhost:8001/api/saga/reserve-seat/", 
-                    "http://localhost:8001/api/saga/cancel-seat/"),
-            SagaStep("AuthorizePayment",
-                    "http://localhost:8002/api/saga/authorize-payment/",
-                    "http://localhost:8002/api/saga/cancel-payment/"),
-            SagaStep("AwardMiles",
+            # Step 1: Miles Loyalty (was AwardMiles)
+            SagaStep("MilesLoyalty",
                     "http://localhost:8003/api/saga/award-miles/",
                     "http://localhost:8003/api/saga/reverse-miles/"),
-            SagaStep("ConfirmBooking", 
-                    "http://localhost:8001/api/saga/confirm-booking/", 
-                    "http://localhost:8001/api/saga/cancel-booking/")
+            # Step 2: Payment Transaction (was AuthorizePayment)
+            SagaStep("PaymentTransaction",
+                    "http://localhost:8002/api/saga/authorize-payment/",
+                    "http://localhost:8002/api/saga/cancel-payment/"),
+            # Step 3: Booking Done (was ConfirmBooking)
+            SagaStep("BookingDone",
+                    "http://localhost:8001/api/saga/confirm-booking/",
+                    "http://localhost:8001/api/saga/cancel-booking/"),
+            # Step 4: Reservation Done (was ReserveSeat)
+            SagaStep("ReservationDone",
+                    "http://localhost:8001/api/saga/reserve-seat/",
+                    "http://localhost:8001/api/saga/cancel-seat/")
         ]
     
     def start_booking_saga(self, booking_data: Dict[str, Any]) -> Dict[str, Any]:
-        correlation_id = str(uuid.uuid4())
-        logger.info(f"[SAGA] Starting booking SAGA with correlation_id: {correlation_id}")
+        correlation_id = booking_data.get("correlation_id") or str(uuid.uuid4())
+        logger.info(f"[SAGA] Starting booking SAGA with correlation_id: {correlation_id} (provided={bool(booking_data.get('correlation_id'))})")
         
         # DIAGNOSTIC: Add comprehensive logging for debugging missing logs
         logger.info(f"[SAGA ORCHESTRATOR DEBUG] ===== SAGA TRANSACTION START =====")
@@ -71,7 +84,7 @@ class BookingOrchestrator:
                 # Log step initiation with proper service name
                 saga_log_storage.add_log(
                     correlation_id, step.name, f"{step.name} Service", "info",
-                    f"💺 {step.name} step initiated for correlation_id: {correlation_id}"
+                    f"{step.name} step initiated for correlation_id: {correlation_id}"
                 )
                 
                 # DIAGNOSTIC: Check logs count after step initiation
@@ -81,11 +94,20 @@ class BookingOrchestrator:
                 logger.info(f"[PAYMENT_FLOW_DEBUG] ===== SAGA STEP {i+1}: {step.name} =====")
                 logger.info(f"[PAYMENT_FLOW_DEBUG] Step URL: {step.action_url}")
                 
+                # Backwards-compatible simulation flags:
+                # Existing callers send flags like simulate_awardmiles_fail, etc.
+                simulate_flag_aliases = {
+                    "MilesLoyalty": "awardmiles",
+                    "PaymentTransaction": "authorizepayment",
+                    "BookingDone": "confirmbooking",
+                    "ReservationDone": "reserveseat",
+                }
+                simulate_key = simulate_flag_aliases.get(step.name, step.name.lower())
                 step_data = {
                     "correlation_id": correlation_id,
                     "step_number": i + 1,
                     "booking_data": booking_data,
-                    "simulate_failure": booking_data.get(f"simulate_{step.name.lower()}_fail", False)
+                    "simulate_failure": booking_data.get(f"simulate_{simulate_key}_fail", False)
                 }
                 
                 logger.info(f"[PAYMENT_FLOW_DEBUG] Step data flight_id: '{step_data['booking_data'].get('flight_id')}'")
@@ -111,18 +133,22 @@ class BookingOrchestrator:
                     current_logs = saga_log_storage.get_logs(correlation_id)
                     logger.info(f"[SAGA ORCHESTRATOR DEBUG] Logs count after {step.name} success: {len(current_logs)}")
                     
-                    # Add specific step details based on step type
-                    if step.name == "ReserveSeat" and result.get('reservation_id'):
+                    # Add specific step details based on step type (updated step names only)
+                    if step.name == "ReservationDone" and result.get('reservation_id'):
                         saga_log_storage.add_log(
                             correlation_id, step.name, "Backend Service", "info",
                             f"💺 Created reservation record: {result.get('reservation_id')}"
                         )
-                    elif step.name == "AuthorizePayment" and result.get('authorization_id'):
+                    elif step.name == "PaymentTransaction" and result.get('authorization_id'):
                         saga_log_storage.add_log(
                             correlation_id, step.name, "Payment Service", "info",
                             f"💳 Authorization ID: {result.get('authorization_id')} - Amount: ${result.get('amount', 0)}"
                         )
-                    elif step.name == "AwardMiles" and result.get('miles_awarded'):
+                        saga_log_storage.add_log(
+                            correlation_id, step.name, "Payment Service", "info",
+                            "INTER-SERVICE: Payment authorized. UI should now collect card details / confirm capture."
+                        )
+                    elif step.name == "MilesLoyalty" and result.get('miles_awarded'):
                         saga_log_storage.add_log(
                             correlation_id, step.name, "Loyalty Service", "info",
                             f"🏆 Miles awarded: {result.get('miles_awarded')} - Balance: {result.get('original_balance')} -> {result.get('new_balance')}"
@@ -297,18 +323,18 @@ class BookingOrchestrator:
                     comp_logs = saga_log_storage.get_logs(correlation_id)
                     logger.info(f"[SAGA ORCHESTRATOR DEBUG] Logs count after {step.name} compensation: {len(comp_logs)}")
                     
-                    # Add specific compensation details
-                    if step.name == "AwardMiles" and result.get('miles_reversed'):
+                    # Add specific compensation details (updated step names only)
+                    if step.name == "MilesLoyalty" and result.get('miles_reversed'):
                         saga_log_storage.add_log(
                             correlation_id, f"COMPENSATE_{step.name}", "Loyalty Compensation", "info",
                             f"↩️ Miles reversed: {result.get('miles_reversed')} - Balance: {result.get('original_balance')} -> {result.get('new_balance')}", is_compensation=True
                         )
-                    elif step.name == "AuthorizePayment" and result.get('authorization_id'):
+                    elif step.name == "PaymentTransaction" and result.get('authorization_id'):
                         saga_log_storage.add_log(
                             correlation_id, f"COMPENSATE_{step.name}", "Payment Compensation", "info",
                             f"💳 Cancelled authorization: {result.get('authorization_id')} - Amount: ${result.get('amount', 0)}", is_compensation=True
                         )
-                    elif step.name == "ReserveSeat":
+                    elif step.name == "ReservationDone":
                         saga_log_storage.add_log(
                             correlation_id, f"COMPENSATE_{step.name}", "Backend Compensation", "info",
                             f"💺 Seat reservation cancelled successfully", is_compensation=True

@@ -1,0 +1,109 @@
+/* Round trip flight search styles */
+
+.query-trip-type-div {
+    background: #f8f9fa;
+    padding: 15px 0;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.query-trip-type-div .tabs {
+    display: flex;
+    justify-content: center;
+    position: relative;
+}
+
+.query-trip-type-div .tabs a {
+    padding: 10px 20px;
+    margin: 0 10px;
+    background: #fff;
+    border: 1px solid #dee2e6;
+    border-radius: 5px;
+    text-decoration: none;
+    color: #495057;
+    transition: all 0.3s ease;
+}
+
+.query-trip-type-div .tabs a:hover {
+    background: #e9ecef;
+}
+
+.query-trip-type-div .tabs a.active-div {
+    background: #007bff;
+    color: white;
+    border-color: #007bff;
+}
+
+.query-result-div-2 {
+    display: block;
+}
+
+/* Tab switching for flight panels */
+#flight1-panel,
+#flight2-panel {
+    transition: opacity 0.3s ease;
+}
+
+.selection-div {
+    background: #007bff;
+    color: white;
+    padding: 15px 0;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.selection-div .col-3 {
+    flex: 1;
+    padding: 0 15px;
+    text-align: center;
+}
+
+.selection-div .white {
+    color: white;
+}
+
+.selection-div .white-2 {
+    color: #cce7ff;
+    font-size: 0.9em;
+}
+
+.selection-confirm button {
+    background: white;
+    color: #007bff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.selection-confirm button:hover {
+    background: #f8f9fa;
+}
+
+.selection-confirm button:disabled {
+    background: #e9ecef;
+    color: #6c757d;
+    cursor: not-allowed;
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+    .selection-div {
+        flex-direction: column;
+        padding: 10px;
+    }
+    
+    .selection-div .col-3 {
+        margin: 5px 0;
+    }
+    
+    .selection-media {
+        display: block;
+    }
+}

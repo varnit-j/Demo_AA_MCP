@@ -79,8 +79,8 @@ function handleCheckboxChange(event) {
     // Update the display
     updateSagaDemoDisplay(selectedFailureType);
     
-    // Show real-time preview
-    showRealTimePreview(selectedFailureType);
+    // REMOVED: showRealTimePreview() - no longer needed
+    // showRealTimePreview(selectedFailureType);
     
     // Update the saga demo mode flag
     updateSagaDemoMode();
@@ -100,17 +100,10 @@ function extractFailureType(checkboxName) {
 function updateSagaDemoDisplay(failureType) {
     console.log(`[SAGA DEMO] Updating display for failure type: ${failureType}`);
     
-    // Create or update the dynamic logs container
-    createDynamicLogsContainer();
-    
-    // Generate and display logs based on failure type
-    if (failureType) {
-        displayFailureScenarioLogs(failureType);
-        showStepsProgress(failureType);
-    } else {
-        displaySuccessScenarioLogs();
-        showStepsProgress(null);
-    }
+    // REMOVED: Dynamic logs and progress display - user requested removal
+    // createDynamicLogsContainer();
+    // displayFailureScenarioLogs(failureType);
+    // showStepsProgress(failureType);
 }
 
 /**

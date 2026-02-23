@@ -73,6 +73,7 @@ def authorize_payment(request):
         
         logger.info(f"[SAGA PAYMENT] ✅ Payment authorized successfully! Amount: ${total_amount}")
         logger.info(f"[SAGA PAYMENT] 🎯 Authorization ID: {authorization_id}")
+        logger.info(f"[SAGA PAYMENT] [INTER-SERVICE] -> UI should now prompt payment details for correlation_id={correlation_id} (not mark BOOKED yet)")
         
         return JsonResponse({
             "success": True,

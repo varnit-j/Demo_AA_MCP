@@ -92,4 +92,5 @@ def export_users_to_csv(cursor, output_dir, filename="users.csv"):
     rows = cursor.fetchall()
     
     filepath = os.path.join(output_dir, filename)
-    with open(filepath, 'w', newline='', encoding='utf-8')
+    with open(filepath, 'w', newline='', encoding='utf-8') as f:
+        pass

@@ -144,13 +144,31 @@ def start_booking_saga(request):
         logger.info(f"[FLIGHT_DATA_DEBUG] User ID: {data.get('user_id', 1)}")
         logger.info(f"[FLIGHT_DATA_DEBUG] Passengers count: {len(passengers)}")
         
-        # Prepare booking data for SAGA
+        # Check for round trip (flight_id_2)
+        flight_id_2 = data.get('flight_id_2')
+        flight_fare_2 = 0
+        
+        if flight_id_2:
+            try:
+                flight_2 = Flight.objects.get(id=flight_id_2)
+                flight_fare_2 = float(flight_2.economy_fare)
+                logger.info(f"[FLIGHT_DATA_DEBUG] Round trip detected - Flight 2 ID: {flight_id_2}")
+                logger.info(f"[FLIGHT_DATA_DEBUG] Flight 2 details: {flight_2.flight_number} from {flight_2.origin} to {flight_2.destination}")
+                logger.info(f"[FLIGHT_DATA_DEBUG] Flight 2 Economy fare: {flight_fare_2}")
+            except Flight.DoesNotExist:
+                logger.warning(f"[FLIGHT_DATA_DEBUG] Flight 2 ID {flight_id_2} not found - treating as single flight")
+                flight_id_2 = None
+                flight_fare_2 = 0
+        
+        # Prepare booking data for SAGA - INCLUDE BOTH FLIGHTS FOR ROUND TRIP
         booking_data = {
             'flight_id': flight_id,
+            'flight_id_2': flight_id_2,  # Add flight_id_2 for round trip
             'user_id': data.get('user_id', 1),
             'passengers': passengers,
             'contact_info': contact_info,
             'flight_fare': float(flight.economy_fare),
+            'flight_fare_2': flight_fare_2,  # Add flight_fare_2 for round trip miles calculation
             'flight': {
                 'id': flight.id,
                 'flight_number': flight.flight_number,
@@ -158,11 +176,12 @@ def start_booking_saga(request):
                 'origin': str(flight.origin),
                 'destination': str(flight.destination)
             },
-            # Failure simulation flags
-            'simulate_reserveseat_fail': data.get('simulate_reserveseat_fail', False),
-            'simulate_authorizepayment_fail': data.get('simulate_authorizepayment_fail', False),
-            'simulate_awardmiles_fail': data.get('simulate_awardmiles_fail', False),
-            'simulate_confirmbooking_fail': data.get('simulate_confirmbooking_fail', False)
+            # Failure simulation flags (RESTRUCTURED step order)
+            # NOTE: Keep existing flag keys for backwards compatibility; orchestrator maps these to new step names.
+            'simulate_awardmiles_fail': data.get('simulate_awardmiles_fail', False),            # Step 1: Miles Loyalty
+            'simulate_authorizepayment_fail': data.get('simulate_authorizepayment_fail', False),# Step 2: Payment Transaction
+            'simulate_confirmbooking_fail': data.get('simulate_confirmbooking_fail', False),    # Step 3: Booking Done
+            'simulate_reserveseat_fail': data.get('simulate_reserveseat_fail', False)           # Step 4: Reservation Done
         }
         
         # Get orchestrator and start SAGA
@@ -213,6 +232,7 @@ def start_booking_saga(request):
             if result.get('success'):
                 saga_transaction.status = 'COMPLETED'
                 saga_transaction.steps_completed = result.get('steps_completed', 0)
+                saga_transaction.error_message = 'PAYMENT_REQUIRED'
             else:
                 saga_transaction.status = 'FAILED'
                 saga_transaction.failed_step = result.get('failed_step')
@@ -539,7 +559,7 @@ def confirm_booking(request):
             "total_fare": total_fare,
             "cancellation_deadline": cancellation_deadline.strftime('%Y-%m-%d %H:%M'),
             "refund_policy": refund_policy,
-            "message": "Business-compliant booking confirmed successfully"
+            "message": "Booking confirmed successfully"
         })
         
     except Exception as e:
@@ -712,10 +732,11 @@ def demo_saga_failure(request):
             'passengers': [{'first_name': 'Demo', 'last_name': 'User', 'gender': 'male'}],
             'contact_info': {'email': 'demo@example.com', 'mobile': '1234567890'},
             'seat_class': 'economy',
-            'simulate_reserveseat_fail': False,  # Simulate failure at seat reservation
-            'simulate_authorizepayment_fail': False,  # Simulate failure at payment step
-            'simulate_awardmiles_fail': False,  # Simulate failure at miles award
-            'simulate_confirmbooking_fail': True  # Simulate failure at booking confirmation - THIS WILL TEST LOYALTY COMPENSATION
+            # Failure simulation flags (RESTRUCTURED step order)
+            'simulate_awardmiles_fail': False,  # Step 1: Miles Loyalty
+            'simulate_authorizepayment_fail': False,  # Step 2: Payment Transaction
+            'simulate_confirmbooking_fail': True,  # Step 3: Booking Done (tests payment+miles compensation)
+            'simulate_reserveseat_fail': False,  # Step 4: Reservation Done
         }
         
         # Get orchestrator and start SAGA
@@ -836,18 +857,20 @@ def start_booking_saga_async(request):
                 'error': f'Flight {flight_id} not found'
             }, status=404)
         
-        # Generate correlation ID immediately
+        # Generate ONE correlation_id and use it for BOTH:
+        # - the 202 Accepted response (what UI polls)
+        # - the actual orchestrator run (what writes step logs)
         correlation_id = str(uuid.uuid4())
-        logger.info(f"[SAGA ASYNC] Generated correlation_id: {correlation_id}")
-        
-        # CRITICAL FIX: Create initial log entry immediately so UI sees logs right away
+        logger.info(f"[SAGA ASYNC] Generated correlation_id (UI + Orchestrator): {correlation_id}")
+
+        # Initial log entry so UI sees logs right away
         try:
             saga_log_storage.add_log(
                 correlation_id=correlation_id,
                 step_name="SAGA_START",
                 service="SAGA BACKEND",
                 log_level="info",
-                message=f"🚀 Async SAGA accepted for correlation_id: {correlation_id}",
+                message=f"Async SAGA accepted for correlation_id: {correlation_id}",
                 is_compensation=False
             )
             logger.info(f"[SAGA ASYNC] Initial log entry created for {correlation_id}")
@@ -874,6 +897,7 @@ def start_booking_saga_async(request):
                         'simulate_awardmiles_fail': data.get('simulate_awardmiles_fail', False),
                         'simulate_confirmbooking_fail': data.get('simulate_confirmbooking_fail', False)
                     }
+                    logger.info(f"[SAGA ASYNC DEBUG] simulate_reserveseat_fail flag: {booking_data.get('simulate_reserveseat_fail')}")
                     result = orchestrator.start_booking_saga(booking_data)
                     logger.info(f"[SAGA ASYNC] Background SAGA completed: {result.get('success')}")
             except Exception as e:

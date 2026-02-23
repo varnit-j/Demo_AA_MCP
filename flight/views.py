@@ -164,19 +164,37 @@ def flight(request):
     departdate = request.GET.get('DepartDate')
     depart_date = datetime.strptime(departdate, "%Y-%m-%d")
     return_date = None
-    if trip_type == '2':
-        returndate = request.GET.get('ReturnDate')
-        return_date = datetime.strptime(returndate, "%Y-%m-%d")
-        flightday2 = Week.objects.get(number=return_date.weekday()) ##
-        origin2 = Place.objects.get(code=d_place.upper())   ##
-        destination2 = Place.objects.get(code=o_place.upper())  ##
+    
+    print(f"[FLIGHT SEARCH] Origin: {o_place}, Destination: {d_place}, TripType: {trip_type}, DepartDate: {departdate}")
+    
+    # Initialize variables
+    flights2 = []
+    origin2 = None
+    destination2 = None
+    flightday2 = None
+    max_price2 = 0
+    min_price2 = 0
+    
+    # Get common flight details
     seat = request.GET.get('SeatClass')
-
     flightday = Week.objects.get(number=depart_date.weekday())
     destination = Place.objects.get(code=d_place.upper())
     origin = Place.objects.get(code=o_place.upper())
+    
+    print(f"[OUTBOUND] FlightDay: {flightday}, Origin: {origin}, Destination: {destination}, Seat: {seat}")
+    
+    # Handle round trip - set return flight details
+    if trip_type == '2':
+        returndate = request.GET.get('ReturnDate')
+        return_date = datetime.strptime(returndate, "%Y-%m-%d")
+        flightday2 = Week.objects.get(number=return_date.weekday())
+        origin2 = Place.objects.get(code=d_place.upper())  # Return: from destination to origin
+        destination2 = Place.objects.get(code=o_place.upper())
+        print(f"[ROUND TRIP] Return Date: {returndate}, FlightDay2: {flightday2}, Origin2: {origin2}, Destination2: {destination2}")
+    
     if seat == 'economy':
         flights = Flight.objects.filter(depart_day=flightday,origin=origin,destination=destination,airline__icontains='American Airlines').exclude(economy_fare=0).order_by('economy_fare')
+        print(f"[OUTBOUND ECONOMY] Found {flights.count()} flights")
         try:
             last_flight = flights.last()
             first_flight = flights.first()
@@ -186,8 +204,9 @@ def flight(request):
             max_price = 0
             min_price = 0
 
-        if trip_type == '2':    ##
-            flights2 = Flight.objects.filter(depart_day=flightday2,origin=origin2,destination=destination2,airline__icontains='American Airlines').exclude(economy_fare=0).order_by('economy_fare')    ##
+        if trip_type == '2':
+            flights2 = Flight.objects.filter(depart_day=flightday2,origin=origin2,destination=destination2,airline__icontains='American Airlines').exclude(economy_fare=0).order_by('economy_fare')
+            print(f"[RETURN ECONOMY] Found {flights2.count()} flights")
             try:
                 last_flight2 = flights2.last()
                 first_flight2 = flights2.first()
@@ -199,6 +218,7 @@ def flight(request):
                 
     elif seat == 'business':
         flights = Flight.objects.filter(depart_day=flightday,origin=origin,destination=destination,airline__icontains='American Airlines').exclude(business_fare=0).order_by('business_fare')
+        print(f"[OUTBOUND BUSINESS] Found {flights.count()} flights")
         try:
             last_flight = flights.last()
             first_flight = flights.first()
@@ -208,8 +228,9 @@ def flight(request):
             max_price = 0
             min_price = 0
 
-        if trip_type == '2':    ##
-            flights2 = Flight.objects.filter(depart_day=flightday2,origin=origin2,destination=destination2,airline__icontains='American Airlines').exclude(business_fare=0).order_by('business_fare')    ##
+        if trip_type == '2':
+            flights2 = Flight.objects.filter(depart_day=flightday2,origin=origin2,destination=destination2,airline__icontains='American Airlines').exclude(business_fare=0).order_by('business_fare')
+            print(f"[RETURN BUSINESS] Found {flights2.count()} flights")
             try:
                 last_flight2 = flights2.last()
                 first_flight2 = flights2.first()
@@ -221,6 +242,7 @@ def flight(request):
 
     elif seat == 'first':
         flights = Flight.objects.filter(depart_day=flightday,origin=origin,destination=destination,airline__icontains='American Airlines').exclude(first_fare=0).order_by('first_fare')
+        print(f"[OUTBOUND FIRST] Found {flights.count()} flights")
         try:
             last_flight = flights.last()
             first_flight = flights.first()
@@ -230,8 +252,9 @@ def flight(request):
             max_price = 0
             min_price = 0
             
-        if trip_type == '2':    ##
+        if trip_type == '2':
             flights2 = Flight.objects.filter(depart_day=flightday2,origin=origin2,destination=destination2,airline__icontains='American Airlines').exclude(first_fare=0).order_by('first_fare')
+            print(f"[RETURN FIRST] Found {flights2.count()} flights")
             try:
                 last_flight2 = flights2.last()
                 first_flight2 = flights2.first()
@@ -241,36 +264,35 @@ def flight(request):
                 max_price2 = 0
                 min_price2 = 0
 
-    #print(calendar.day_name[depart_date.weekday()])
+    context = {
+        'flights': flights,
+        'origin': origin,
+        'destination': destination,
+        'seat': seat.capitalize(),
+        'trip_type': trip_type,
+        'depart_date': depart_date,
+        'return_date': return_date,
+        'max_price': math.ceil((max_price or 0)/100)*100 if (max_price or 0) > 0 else 0,
+        'min_price': math.floor((min_price or 0)/100)*100 if (min_price or 0) > 0 else 0,
+    }
+    
     if trip_type == '2':
-        return render(request, "flight/search.html", {
-            'flights': flights,
-            'origin': origin,
-            'destination': destination,
-            'flights2': flights2,   ##
-            'origin2': origin2,    ##
-            'destination2': destination2,    ##
-            'seat': seat.capitalize(),
-            'trip_type': trip_type,
-            'depart_date': depart_date,
-            'return_date': return_date,
-            'max_price': math.ceil((max_price or 0)/100)*100 if (max_price or 0) > 0 else 0,
-            'min_price': math.floor((min_price or 0)/100)*100 if (min_price or 0) > 0 else 0,
+        print(f"[ROUND TRIP] Adding flights2 to context. flights2 type: {type(flights2)}, count: {flights2.count() if hasattr(flights2, 'count') else len(flights2)}")
+        context.update({
+            'flights2': flights2,
+            'origin2': origin2,
+            'destination2': destination2,
             'max_price2': math.ceil((max_price2 or 0)/100)*100 if (max_price2 or 0) > 0 else 0,
             'min_price2': math.floor((min_price2 or 0)/100)*100 if (min_price2 or 0) > 0 else 0
         })
+        print(f"[CONTEXT AFTER UPDATE] 'flights2' in context: {'flights2' in context}")
     else:
-        return render(request, "flight/search.html", {
-            'flights': flights,
-            'origin': origin,
-            'destination': destination,
-            'seat': seat.capitalize(),
-            'trip_type': trip_type,
-            'depart_date': depart_date,
-            'return_date': return_date,
-            'max_price': math.ceil((max_price or 0)/100)*100 if (max_price or 0) > 0 else 0,
-            'min_price': math.floor((min_price or 0)/100)*100 if (min_price or 0) > 0 else 0
-        })
+        print(f"[NOT ROUND TRIP] Trip type: {trip_type}, flights2 will NOT be added")
+    
+    print(f"[CONTEXT] Trip Type: {trip_type}, Flights: {flights.count()}, Flights2: {context.get('flights2').count() if 'flights2' in context else 'NOT IN CONTEXT'}")
+    print(f"[CONTEXT KEYS] {list(context.keys())}")
+    
+    return render(request, "flight/search.html", context)
 
 def review(request):
     flight_1 = request.GET.get('flight1Id')
@@ -551,6 +573,12 @@ def payment(request):
             try:
                 ticket = Ticket.objects.get(id=ticket_id)
                 
+                # For round trips, get total fare from both tickets for points calculation
+                total_booking_fare = float(ticket.total_fare) if ticket.total_fare else 0
+                if t2:
+                    ticket2 = Ticket.objects.get(id=ticket2_id)
+                    total_booking_fare += float(ticket2.total_fare) if ticket2.total_fare else 0
+                
                 # LOYALTY INTEGRATION - Handle points redemption BEFORE confirming ticket
                 if LoyaltyService and points_to_use > 0:
                     try:
@@ -579,26 +607,42 @@ def payment(request):
                 safe_print(f"DEBUG: Payment completed for user {request.user.username}, ticket {ticket.ref_no}, fare ${ticket.total_fare}")
                 safe_print(f"DEBUG: LoyaltyService available: {LoyaltyService is not None}")
                 
-                # LOYALTY INTEGRATION - Award points for successful booking
+                # LOYALTY INTEGRATION - Award points based on TOTAL PAYMENT (both flights + fee)
                 if LoyaltyService:
                     try:
-                        # Calculate points (2% of amount spent)
-                        fare_amount = float(ticket.total_fare) if ticket.total_fare else 0
-                        usd_fare_amount = fare_amount / 82.5  # Convert INR to USD
-                        points_to_award = int(usd_fare_amount * 2)  # 2% of USD fare as points
-                        safe_print(f"DEBUG: Fare: ${usd_fare_amount:.2f}, Awarding {points_to_award} points (2%) for booking {ticket.ref_no}")
+                        # Calculate TOTAL points from complete payment (not per ticket)
+                        # This ensures points are awarded once for the entire booking transaction
                         
-                        # Award loyalty points
+                        if t2:
+                            # Round trip: both tickets
+                            ticket2 = Ticket.objects.get(id=ticket2_id)
+                            total_payment = float(ticket.total_fare) + float(ticket2.total_fare)
+                        else:
+                            # One way: single ticket
+                            total_payment = float(ticket.total_fare)
+                        
+                        # Convert to USD for points calculation (2% of amount spent = points)
+                        usd_total_payment = total_payment / 82.5  # Convert INR to USD
+                        total_points_to_award = int(usd_total_payment * 2)  # 2% of USD payment as points
+                        
+                        safe_print(f"DEBUG: LOYALTY - Total Payment: ₹{total_payment:.2f} (${usd_total_payment:.2f})")
+                        safe_print(f"DEBUG: LOYALTY - Awarding {total_points_to_award} points (2% of ${usd_total_payment:.2f})")
+                        
+                        # Award ALL points in a SINGLE transaction for the entire booking
+                        booking_reference = f"{ticket.ref_no}"
+                        if t2:
+                            booking_reference += f" + {ticket2.ref_no}"
+                        
                         LoyaltyService.earn_points(
                             user=request.user,
-                            points_amount=points_to_award,
-                            reference_id=ticket.ref_no,
-                            description=f"Flight booking - {ticket.ref_no} (2% of ${usd_fare_amount:.2f})"
+                            points_amount=total_points_to_award,
+                            reference_id=booking_reference,
+                            description=f"Flight booking - {booking_reference} (2% of ${usd_total_payment:.2f}) [TOTAL_PAYMENT]"
                         )
-                        safe_print(f"DEBUG: Successfully awarded {points_to_award} points to {request.user.username}")
+                        safe_print(f"DEBUG: LOYALTY - Successfully awarded {total_points_to_award} points to {request.user.username} for booking: {booking_reference}")
                         
                     except Exception as loyalty_error:
-                        safe_print(f"DEBUG: Loyalty error: {loyalty_error}")
+                        safe_print(f"DEBUG: LOYALTY ERROR: {loyalty_error}")
                 else:
                     safe_print("DEBUG: LoyaltyService not available - no points awarded")
                 

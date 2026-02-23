@@ -349,23 +349,44 @@ function reset_filter2() {
 
 
 function trip_type_flight(element) {
+    // For round trips, show both panels side by side
+    // Check if this is a round trip booking
+    const tripIdentifier = document.querySelector('#trip-identifier');
+    const isRoundTrip = tripIdentifier && tripIdentifier.value === '2';
+    
     if(element.dataset.trip_type === '1') {
-        document.querySelector(".query-result-div-2").style.display = 'none';
-        document.querySelector(".query-result-div").style.display = 'block';
-        //element.classList.add('active-div');
-        //document.querySelector('#flight2-btn-div').classList.remove('active-div');
+        if(isRoundTrip) {
+            // Show both panels for round trip
+            document.querySelector(".query-result-div").style.display = 'block';
+            document.querySelector(".query-result-div-2").style.display = 'block';
+        } else {
+            // One way - show only first panel
+            document.querySelector(".query-result-div-2").style.display = 'none';
+            document.querySelector(".query-result-div").style.display = 'block';
+        }
     }
     else if(element.dataset.trip_type === '2') {
-        document.querySelector(".query-result-div").style.display = 'none';
-        document.querySelector(".query-result-div-2").style.display = 'block';
-        //element.classList.add('active-div');
-        //document.querySelector('#flight1-btn-div').classList.remove('active-div');
+        if(isRoundTrip) {
+            // For round trip, still show both
+            document.querySelector(".query-result-div").style.display = 'block';
+            document.querySelector(".query-result-div-2").style.display = 'block';
+        } else {
+            // One way - show second panel
+            document.querySelector(".query-result-div").style.display = 'none';
+            document.querySelector(".query-result-div-2").style.display = 'block';
+        }
     }
 }
 
 
 
 function flight_select() {
+    // Helper function to safely get fare value
+    const getFareValue = (fareStr) => {
+        if (!fareStr) return 0;
+        return parseInt(fareStr.replace(/[^\d]/g, '')) || 0;
+    };
+
     document.querySelectorAll(".flight1-radio").forEach(radio => {
         radio.addEventListener('click', e => {
             document.querySelectorAll('#flt1').forEach(flt1 => {
@@ -375,10 +396,18 @@ function flight_select() {
             document.querySelector("#select-f1-depart").innerText = e.target.dataset.depart;
             document.querySelector("#select-f1-arrive").innerText = e.target.dataset.arrive;
             document.querySelector("#select-f1-fare").innerText = e.target.dataset.fare;
-            document.querySelector("#select-total-fare").innerText = parseInt(e.target.dataset.fare) + parseInt(document.querySelector("#select-f2-fare").innerText);
-            document.querySelector("#select-total-fare-media").innerText = parseInt(e.target.dataset.fare) + parseInt(document.querySelector("#select-f2-fare").innerText);
+            
+            // Calculate total fare
+            const fare1 = getFareValue(e.target.dataset.fare);
+            const fare2Elem = document.querySelector("#select-f2-fare");
+            const fare2 = fare2Elem ? getFareValue(fare2Elem.innerText) : 0;
+            const totalFare = fare1 + fare2;
+            
+            document.querySelector("#select-total-fare").innerText = totalFare;
+            document.querySelector("#select-total-fare-media").innerText = totalFare;
         });
     });
+    
     document.querySelectorAll(".flight2-radio").forEach(radio => {
         radio.addEventListener('click', e => {
             document.querySelectorAll('#flt2').forEach(flt2 => {
@@ -388,8 +417,15 @@ function flight_select() {
             document.querySelector("#select-f2-depart").innerText = e.target.dataset.depart;
             document.querySelector("#select-f2-arrive").innerText = e.target.dataset.arrive;
             document.querySelector("#select-f2-fare").innerText = e.target.dataset.fare;
-            document.querySelector("#select-total-fare").innerText = parseInt(e.target.dataset.fare) + parseInt(document.querySelector("#select-f1-fare").innerText);
-            document.querySelector("#select-total-fare-media").innerText = parseInt(e.target.dataset.fare) + parseInt(document.querySelector("#select-f1-fare").innerText);
+            
+            // Calculate total fare
+            const fare2 = getFareValue(e.target.dataset.fare);
+            const fare1Elem = document.querySelector("#select-f1-fare");
+            const fare1 = fare1Elem ? getFareValue(fare1Elem.innerText) : 0;
+            const totalFare = fare1 + fare2;
+            
+            document.querySelector("#select-total-fare").innerText = totalFare;
+            document.querySelector("#select-total-fare-media").innerText = totalFare;
         });
     });
 }

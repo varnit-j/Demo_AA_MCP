@@ -77,9 +77,13 @@ async function pollOnce(correlationId, container) {
     const logs = (data && data.logs) ? data.logs : [];
     const norm = normalizeLogs(logs);
     const keys = new Set(norm.map(x => x.key));
-    if (keys.size !== lastKeys.size) {
-      render(container, logs);
-    }
+    const changed = keys.size !== lastKeys.size;
+    if (changed) render(container, logs);
+    lastKeys = keys;
+    const hasConfirmSuccess = logs.some(l => l && l.step_name === 'BookingDone' && String(l.log_level || '').toLowerCase() === 'success');
+    const hasOrchError = logs.some(l => l && String(l.service || '').toUpperCase() === 'ORCHESTRATOR' && String(l.log_level || '').toLowerCase() === 'error');
+    const hasComp = logs.some(l => l && l.is_compensation);
+    if (hasConfirmSuccess || hasOrchError || hasComp) window.location.reload(true);
   } catch (e) {
     // silence polling errors
   }

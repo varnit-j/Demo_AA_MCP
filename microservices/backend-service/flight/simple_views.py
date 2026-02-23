@@ -22,15 +22,24 @@ def flight_search(request):
         destination_code = request.GET.get('destination', '').upper()
         depart_date_str = request.GET.get('depart_date', '')
         seat_class = request.GET.get('seat_class', 'economy')
+        trip_type = request.GET.get('trip_type', '1')  # '1' for one-way, '2' for round-trip
+        return_date_str = request.GET.get('return_date', '')  # For round-trip
         
-        print(f"[DEBUG] Flight search params: origin={origin_code}, dest={destination_code}, date={depart_date_str}, class={seat_class}")
+        print(f"[DEBUG] Flight search params: origin={origin_code}, dest={destination_code}, date={depart_date_str}, class={seat_class}, trip_type={trip_type}")
         
         # Basic validation
         if not origin_code or not destination_code or not depart_date_str:
             return JsonResponse({'error': 'Missing required parameters'}, status=400)
         
-        # Parse date
+        # Validate return date for round trip
+        if trip_type == '2' and not return_date_str:
+            return JsonResponse({'error': 'Return date is required for round trip'}, status=400)
+        
+        # Parse dates
         depart_date = datetime.strptime(depart_date_str, '%Y-%m-%d').date()
+        return_date = None
+        if trip_type == '2':
+            return_date = datetime.strptime(return_date_str, '%Y-%m-%d').date()
         
         # Get places
         try:
@@ -45,7 +54,7 @@ def flight_search(request):
         except Week.DoesNotExist:
             return JsonResponse({'error': 'Invalid date'}, status=400)
         
-        # Search flights - limit to American Airlines only
+        # Search outbound flights - limit to American Airlines only
         flights = Flight.objects.filter(
             origin=origin,
             destination=destination,
@@ -87,7 +96,74 @@ def flight_search(request):
                 'duration': str(flight.duration)
             })
         
-        return JsonResponse({
+        # Search return flights for round trip
+        flights2_data = []
+        origin2_data = None
+        destination2_data = None
+        if trip_type == '2' and return_date:
+            print(f"[DEBUG] Processing return flights for trip_type={trip_type}, return_date={return_date}")
+            try:
+                return_flight_day = Week.objects.get(number=return_date.weekday())
+                
+                # Search return flights (swapped origin and destination)
+                flights2 = Flight.objects.filter(
+                    origin=destination,  # Return flight starts from destination
+                    destination=origin,   # Return flight ends at origin
+                    depart_day=return_flight_day,
+                    airline__icontains='American Airlines'
+                )
+                
+                # Filter by seat class
+                if seat_class == 'economy':
+                    flights2 = flights2.exclude(economy_fare=0).order_by('economy_fare')
+                elif seat_class == 'business':
+                    flights2 = flights2.exclude(business_fare=0).order_by('business_fare')
+                elif seat_class == 'first':
+                    flights2 = flights2.exclude(first_fare=0).order_by('first_fare')
+                
+                print(f"[DEBUG] Found {flights2.count()} return flights")
+                
+                # Convert return flights to JSON
+                for flight in flights2:
+                    flights2_data.append({
+                        'id': flight.id,
+                        'plane': flight.plane,
+                        'airline': flight.airline,
+                        'flight_number': flight.flight_number,
+                        'origin': {
+                            'code': flight.origin.code,
+                            'city': flight.origin.city,
+                            'airport': flight.origin.airport
+                        },
+                        'destination': {
+                            'code': flight.destination.code,
+                            'city': flight.destination.city,
+                            'airport': flight.destination.airport
+                        },
+                        'depart_time': str(flight.depart_time),
+                        'arrival_time': str(flight.arrival_time),
+                        'economy_fare': float(flight.economy_fare),
+                        'business_fare': float(flight.business_fare),
+                        'first_fare': float(flight.first_fare),
+                        'duration': str(flight.duration)
+                    })
+                
+                # Prepare origin2 and destination2 (swapped for return leg)
+                origin2_data = {
+                    'code': destination.code,
+                    'city': destination.city,
+                    'airport': destination.airport
+                }
+                destination2_data = {
+                    'code': origin.code,
+                    'city': origin.city,
+                    'airport': origin.airport
+                }
+            except Week.DoesNotExist:
+                print(f"[DEBUG] Invalid return date: {return_date}")
+        
+        # Build response
+        response_data = {
             'flights': flights_data,
             'origin': {
                 'code': origin.code,
@@ -100,8 +176,20 @@ def flight_search(request):
                 'airport': destination.airport
             },
             'depart_date': str(depart_date),
-            'seat_class': seat_class
-        })
+            'seat_class': seat_class,
+            'trip_type': trip_type
+        }
+        
+        # Add return flight data for round trip
+        if trip_type == '2':
+            response_data.update({
+                'flights2': flights2_data,
+                'origin2': origin2_data,
+                'destination2': destination2_data,
+                'return_date': str(return_date)
+            })
+        
+        return JsonResponse(response_data)
         
     except Exception as e:
         print(f"[ERROR] Flight search exception: {e}")

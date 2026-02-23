@@ -8,6 +8,43 @@
     <link rel="stylesheet" href="{% static 'css/book_style.css' %}">
     <script type="text/javascript" src="{% static 'js/book.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/saga_demo.js' %}"></script>
+    <script>
+        // Global toggle function for SAGA demo section (defined outside hidden div)
+        function toggleSagaDemoSection() {
+            const sagaSection = document.getElementById('sagaDemoSection');
+            const toggleBtn = document.getElementById('toggleSagaDemo');
+            
+            if (!sagaSection) {
+                console.error('[ERROR] sagaDemoSection element not found');
+                return;
+            }
+            
+            // Check if section is currently visible using classList or data attribute
+            const isHidden = sagaSection.classList.contains('saga-hidden');
+            
+            if (isHidden) {
+                // Show the section
+                sagaSection.classList.remove('saga-hidden');
+                sagaSection.style.setProperty('display', 'block', 'important');
+                sagaSection.style.setProperty('visibility', 'visible', 'important');
+                if (toggleBtn) {
+                    toggleBtn.style.backgroundColor = '#28a745';
+                    toggleBtn.style.borderColor = '#28a745';
+                }
+                console.log('[SAGA] Demo section shown');
+            } else {
+                // Hide the section
+                sagaSection.classList.add('saga-hidden');
+                sagaSection.style.setProperty('display', 'none', 'important');
+                sagaSection.style.setProperty('visibility', 'hidden', 'important');
+                if (toggleBtn) {
+                    toggleBtn.style.backgroundColor = '#ffc107';
+                    toggleBtn.style.borderColor = '#ffc107';
+                }
+                console.log('[SAGA] Demo section hidden');
+            }
+        }
+    </script>
 {% endblock %}
 
 {% block body %}
@@ -571,52 +608,49 @@
                         </div>
                     </div>
                     
-                    <!-- SAGA Failure Simulation Section -->
-                    <div class="saga-demo-section" style="margin-top: 20px !important; padding: 15px !important; background-color: #fff3cd !important; border: 2px solid #ffeaa7 !important; border-radius: 8px !important; display: block !important; visibility: visible !important; z-index: 1000 !important;">
-                        <h5 style="color: #856404 !important; margin-bottom: 15px !important; background: none !important; -webkit-text-fill-color: #856404 !important;">🔧 SAGA Demo Controls</h5>
-                        <p style="font-size: 12px !important; color: #856404 !important; margin-bottom: 15px !important;">
-                            Toggle switches to simulate transaction failures and demonstrate SAGA compensation
-                        </p>
-                        <hr style="border-color: #ffeaa7 !important;">
+                    <!-- SAGA Demo Mode Toggle Button -->
+                    <div style="margin-top: 20px; text-align: center;">
+                        <button type="button" id="toggleSagaDemo" class="btn btn-warning" style="background-color: #ffc107; border-color: #ffc107; color: #333; font-weight: bold; padding: 8px 15px;" onclick="toggleSagaDemoSection()" title="Test Mode Options">
+                            ⚙️
+                        </button>
+                    </div>
+                    
+                    <!-- SAGA Failure Simulation Section - HIDDEN BY DEFAULT -->
+                    <div id="sagaDemoSection" class="saga-demo-section" style="margin-top: 10px !important; padding: 10px !important; background-color: #fff3cd !important; border: 1px solid #ffeaa7 !important; border-radius: 5px !important; display: none !important; visibility: hidden !important; z-index: 1000 !important;">
                         
-                        <!-- DEBUG INFO -->
-                        <div style="background: #f8f9fa; padding: 5px; margin-bottom: 10px; font-size: 10px; color: #666;">
-                            DEBUG: SAGA section loaded. Flight1: {% if flight1 %}✓ {{flight1.airline}}{% else %}✗ Missing{% endif %}
-                        </div>
-                        
-                        <!-- Reserve Seat Failure -->
-                        <div class="form-check" style="margin-bottom: 10px;">
-                            <input class="form-check-input" type="checkbox" name="simulate_reserveseat_fail" id="simulateReserveSeatFail">
-                            <label class="form-check-label" for="simulateReserveSeatFail" style="font-size: 13px; color: #856404;">
-                                <strong>Simulate Seat Reservation Failure</strong>
-                                <br><small>Fails at step 1 - no compensation needed</small>
-                            </label>
-                        </div>
-                        
-                        <!-- Payment Authorization Failure -->
-                        <div class="form-check" style="margin-bottom: 10px;">
-                            <input class="form-check-input" type="checkbox" name="simulate_authorizepayment_fail" id="simulatePaymentFail">
-                            <label class="form-check-label" for="simulatePaymentFail" style="font-size: 13px; color: #856404;">
-                                <strong>Simulate Payment Authorization Failure</strong>
-                                <br><small>Fails at step 2 - compensates seat reservation</small>
-                            </label>
-                        </div>
-                        
-                        <!-- Miles Award Failure -->
+                        <!-- Miles Loyalty Failure -->
                         <div class="form-check" style="margin-bottom: 10px;">
                             <input class="form-check-input" type="checkbox" name="simulate_awardmiles_fail" id="simulateMilesFail">
                             <label class="form-check-label" for="simulateMilesFail" style="font-size: 13px; color: #856404;">
-                                <strong>Simulate Miles Award Failure</strong>
-                                <br><small>Fails at step 3 - compensates payment & seat</small>
+                                <strong>Simulate Miles Loyalty Failure</strong>
+                                <br><small>Fails early - no compensation needed</small>
                             </label>
                         </div>
                         
-                        <!-- Booking Confirmation Failure -->
-                        <div class="form-check" style="margin-bottom: 15px;">
+                        <!-- Payment Transaction Failure -->
+                        <div class="form-check" style="margin-bottom: 10px;">
+                            <input class="form-check-input" type="checkbox" name="simulate_authorizepayment_fail" id="simulatePaymentFail">
+                            <label class="form-check-label" for="simulatePaymentFail" style="font-size: 13px; color: #856404;">
+                                <strong>Simulate Payment Transaction Failure</strong>
+                                <br><small>Compensates miles loyalty</small>
+                            </label>
+                        </div>
+                        
+                        <!-- Booking Done Failure -->
+                        <div class="form-check" style="margin-bottom: 10px;">
                             <input class="form-check-input" type="checkbox" name="simulate_confirmbooking_fail" id="simulateBookingFail">
                             <label class="form-check-label" for="simulateBookingFail" style="font-size: 13px; color: #856404;">
-                                <strong>Simulate Booking Confirmation Failure</strong>
-                                <br><small>Fails at step 4 - compensates all previous steps</small>
+                                <strong>Simulate Booking Done Failure</strong>
+                                <br><small>Compensates payment & miles</small>
+                            </label>
+                        </div>
+                        
+                        <!-- Reservation Done Failure -->
+                        <div class="form-check" style="margin-bottom: 15px;">
+                            <input class="form-check-input" type="checkbox" name="simulate_reserveseat_fail" id="simulateReserveSeatFail">
+                            <label class="form-check-label" for="simulateReserveSeatFail" style="font-size: 13px; color: #856404;">
+                                <strong>Simulate Reservation Done Failure</strong>
+                                <br><small>Compensates all previous steps</small>
                             </label>
                         </div>
                         

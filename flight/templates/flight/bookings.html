@@ -40,7 +40,7 @@
                             </div>
                         </div>
                         <div class="col-2 middle-div">
-                            <div style="font-size: 1.2em; color: #945937;">{{ticket.ref_no}}</div>
+                            <div style="font-size: 1.2em; color: #945937;">PNR : {{ticket.ref_no}}</div>
                         </div>
                         <div class="col-2 middle-div">
                             <div>
@@ -85,9 +85,6 @@
                                         On hold since: {{ticket.booking_date | date:"D, M d Y"}}
                                     {% endif %}
                                     {% if ticket.status == 'CANCELLED' %}
-                                    {% endif %}
-                                    {% if ticket.status == 'FAILED' %}
-                                        <div class="red">{{ticket.status}}</div>
                                     {% endif %}
                                 </div>
                             </div>

@@ -183,42 +183,28 @@ function getCorrelationIdFromPage() {
 }
 
 /**
- * Fetch real SAGA logs from backend API
+ * POC PHASE 3C: Real-time Service Updates Streaming
+ * Fetch real SAGA logs from backend API with live polling
  */
 function fetchRealSagaLogs(correlationId, container, failedStep) {
-    console.log('[SAGA RESULT DEBUG] Fetching logs for correlation ID:', correlationId);
+    console.log('[POC_STREAMING] Starting real-time log streaming for correlation ID:', correlationId);
     
-    // Show loading indicator
+    // Show live streaming indicator
     container.innerHTML = `
-        <div style="text-align: center; padding: 20px; color: #6c757d;">
-            <div style="font-size: 18px; margin-bottom: 10px;">📊</div>
-            <div>Loading SAGA transaction logs...</div>
+        <div style="background: #17a2b8; color: white; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+            <div style="font-size: 16px; margin-bottom: 10px;">🔄 Live Microservice Monitoring</div>
+            <div>Streaming SAGA transaction logs in real-time...</div>
             <div style="font-size: 12px; margin-top: 10px;">Correlation ID: ${correlationId}</div>
+            <div id="streaming-status" style="font-size: 12px; margin-top: 5px;">⚡ Connecting to services...</div>
         </div>
+        <div id="live-logs-container" style="background: #1e1e1e; color: #f8f9fa; padding: 15px; border-radius: 8px; font-family: 'Courier New', monospace; font-size: 13px; max-height: 400px; overflow-y: auto;">
+            <div style="color: #28a745;">📊 Initializing live log stream...</div>
+        </div>
+        <div id="service-status-container" style="margin-top: 15px;"></div>
     `;
     
-    // Make API call to backend
-    fetch(`/api/saga/logs/${correlationId}/`)
-        .then(response => {
-            console.log('[SAGA RESULT DEBUG] API response status:', response.status);
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-            }
-            return response.json();
-        })
-        .then(data => {
-            console.log('[SAGA RESULT DEBUG] API response data:', data);
-            if (data.success && data.logs && data.logs.length > 0) {
-                displayRealLogs(container, data.logs, correlationId);
-            } else {
-                console.warn('[SAGA RESULT DEBUG] No logs found, showing demo logs');
-                displayStaticDemoLogs(container, failedStep);
-            }
-        })
-        .catch(error => {
-            console.error('[SAGA RESULT DEBUG] Error fetching logs:', error);
-            displayStaticDemoLogs(container, failedStep);
-        });
+    // POC: Start real-time polling for live updates
+    startRealTimeLogPolling(correlationId, container);
 }
 
 /**

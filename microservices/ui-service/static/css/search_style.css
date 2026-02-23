@@ -145,6 +145,7 @@
     animation-duration: .4s;
     animation-fill-mode: forwards;
     animation-timing-function: ease-in-out;
+    width: 100%;
 }
 .filter-div{
     padding: 15px;
@@ -579,4 +580,22 @@
         padding: .3rem .65rem;
     }*/
     /*Next css in othet css file*/
+}
+
+/* Panel toggle styling */
+#flight1-panel,
+#flight2-panel {
+    width: 100%;
+}
+
+.query-result-div.panel-half .col-lg-3,
+.query-result-div-2.panel-half .col-lg-3 {
+    flex: 0 0 100%;
+    max-width: 100%;
+}
+
+.query-result-div.panel-half .col-lg-9,
+.query-result-div-2.panel-half .col-lg-9 {
+    flex: 0 0 100%;
+    max-width: 100%;
 }

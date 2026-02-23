@@ -6,24 +6,28 @@
 <title>SAGA Transaction Results | Flight Booking</title>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 <style>
-    .saga-header { 
-        background: linear-gradient(135deg, #dc3545 0%, #c82333 100%); 
-        color: white; 
-        padding: 40px; 
-        border-radius: 12px; 
-        margin-bottom: 30px; 
-        text-align: center; 
-        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1); 
+    .saga-header {
+        color: white;
+        padding: 40px;
+        border-radius: 12px;
+        margin-bottom: 30px;
+        text-align: center;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
     }
+    .saga-header.success { background: linear-gradient(135deg, #28a745 0%, #218838 100%); }
+    .saga-header.error { background: linear-gradient(135deg, #dc3545 0%, #c82333 100%); }
+    .saga-header.progress { background: linear-gradient(135deg, #17a2b8 0%, #138496 100%); }
     .saga-header h1 { font-size: 2.5rem; font-weight: 700; margin-bottom: 10px; }
-    .status-card { 
-        background: white; 
-        border-radius: 12px; 
-        padding: 30px; 
-        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1); 
-        border-left: 5px solid #dc3545; 
-        margin-bottom: 20px; 
+    .status-card {
+        background: white;
+        border-radius: 12px;
+        padding: 30px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        margin-bottom: 20px;
     }
+    .status-card.success { border-left: 5px solid #28a745; }
+    .status-card.error { border-left: 5px solid #dc3545; }
+    .status-card.progress { border-left: 5px solid #17a2b8; }
     .status-badge { 
         display: inline-flex; 
         align-items: center; 
@@ -69,6 +73,32 @@
     .log-level-success { color: #28a745; }
     .log-level-warning { color: #ffc107; }
     .log-level-compensation { color: #fd7e14; }
+    .saga-logs-toggle {
+        display: inline-block;
+        background: #6c757d;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 600;
+        border: none;
+        margin: 10px 0;
+        transition: all 0.3s ease;
+    }
+    .saga-logs-toggle:hover {
+        background: #5a6268;
+    }
+    #dynamic-saga-logs-placeholder {
+        display: none;
+        margin-top: 15px;
+    }
+    #dynamic-saga-logs-placeholder.show {
+        display: block;
+    }
+    .saga-icon {
+        font-size: 2rem;
+        margin-right: 10px;
+    }
 </style>
 {% endblock %}
 
@@ -76,43 +106,44 @@
 <!-- Hidden data for JavaScript -->
 <script id="saga-logs-data" type="application/json">{{ saga_logs|safe }}</script>
 
-<div class="saga-header">
+<div class="saga-header {% if saga_status.status == 'completed' %}success{% elif saga_status.status == 'in_progress' %}progress{% else %}error{% endif %}">
     <div class="container">
-        <h1><i class="fas fa-exclamation-triangle"></i> SAGA Transaction Results</h1>
-        <p>Distributed Transaction with Real-Time Logging</p>
+        {% if saga_status.status == 'completed' %}
+            <h1><i class="fas fa-check-circle saga-icon"></i> Transaction Successful</h1>
+            <p>Your booking completed successfully. Logs below show each SAGA step.</p>
+        {% elif saga_status.status == 'in_progress' %}
+            <h1><i class="fas fa-spinner fa-spin saga-icon"></i> Transaction In Progress</h1>
+            <p>Your booking is processing. Logs below will update as each step completes.</p>
+        {% else %}
+            <h1><i class="fas fa-exclamation-triangle saga-icon"></i> Transaction Failed</h1>
+            <p>Your booking could not be completed. Click below for details.</p>
+        {% endif %}
         {% if correlation_id %}
-            <div style="background: rgba(255, 255, 255, 0.2); padding: 15px; border-radius: 8px; margin-top: 20px;">
-                <strong>Correlation ID:</strong> {{ correlation_id }}
+            <div style="background: rgba(255, 255, 255, 0.2); padding: 15px; border-radius: 8px; margin-top: 20px; font-size: 0.9rem;">
+                Ref: {{ correlation_id }}
             </div>
         {% endif %}
     </div>
 </div>
 
 <div class="container">
-    <div class="status-card">
-        <h3><i class="fas fa-info-circle"></i> Transaction Status</h3>
-        {% if saga_status %}
-            <div class="status-badge status-error">
-                <i class="fas fa-times-circle"></i>
-                {{ saga_status.status|title }} at {{ saga_status.failed_step }}
+    <div class="status-card {% if saga_status.status == 'completed' %}success{% elif saga_status.status == 'in_progress' %}progress{% else %}error{% endif %}">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <h3><i class="fas fa-info-circle"></i> What Happened?</h3>
+                {% if saga_status.status == 'completed' %}
+                    <p>Your booking was completed successfully across Backend, Payment, and Loyalty services.</p>
+                {% elif saga_status.status == 'in_progress' %}
+                    <p>Your booking is in progress. The log stream below shows each microservice step as it completes.</p>
+                {% else %}
+                    <p>Your booking attempt failed during the transaction process. Your account remains unchanged and no charges were applied.</p>
+                {% endif %}
             </div>
-            <p><strong>Error:</strong> {{ saga_status.error }}</p>
-            <p><strong>Steps Completed:</strong> {{ saga_status.steps_completed }}/{{ saga_status.total_steps }}</p>
-            {% if saga_status.compensations_executed %}
-                <p><strong>Compensations:</strong> {{ saga_status.compensations_executed }} executed successfully</p>
-            {% endif %}
-        {% else %}
-            <div class="status-badge status-error">
-                <i class="fas fa-times-circle"></i>
-                Transaction Failed
-            </div>
-            <p>Unable to retrieve detailed status information.</p>
-        {% endif %}
+            <button class="saga-logs-toggle" onclick="toggleSagaLogs()">
+                <i class="fas fa-chevron-down"></i> View Technical Details
+            </button>
+        </div>
     </div>
-
-    <div class="status-card">
-        <h3><i class="fas fa-list-alt"></i> Real-Time Execution Logs</h3>
-        <p>These logs show the actual SAGA execution flow and compensation actions:</p>
         
         <!-- Placeholder for dynamic logs - will be replaced by JavaScript -->
         <div id="dynamic-saga-logs-placeholder">
@@ -125,14 +156,26 @@
     </div>
 
     <div class="status-card">
-        <h3><i class="fas fa-undo"></i> What Happened?</h3>
-        <p>Your booking attempt failed during the distributed transaction process. Here's what our system did:</p>
-        <ul>
-            <li><strong>Automatic Rollback:</strong> All completed steps were automatically reversed</li>
-            <li><strong>No Charges:</strong> No payment was processed due to the failure</li>
-            <li><strong>Data Consistency:</strong> Your account and loyalty points remain unchanged</li>
-            <li><strong>System Recovery:</strong> All services are ready for your next booking attempt</li>
-        </ul>
+        <h3><i class="fas fa-check-circle"></i> What We Did</h3>
+        {% if saga_status.status == 'completed' %}
+            <p>Your booking succeeded. The system coordinated all services using the SAGA pattern.</p>
+            <ul>
+                <li><strong>Seat Reserved:</strong> Backend reserved your seat</li>
+                <li><strong>Payment Authorized:</strong> Payment service authorized the transaction</li>
+                <li><strong>Miles Awarded:</strong> Loyalty service updated your miles balance</li>
+                <li><strong>Booking Confirmed:</strong> Backend confirmed and created the ticket</li>
+            </ul>
+        {% elif saga_status.status == 'in_progress' %}
+            <p>Your booking is processing. If a step fails, compensations will automatically run to keep data consistent.</p>
+        {% else %}
+            <p>Your booking attempt failed during the distributed transaction process. Here's what our system did:</p>
+            <ul>
+                <li><strong>Automatic Rollback:</strong> All completed steps were automatically reversed</li>
+                <li><strong>No Charges:</strong> No payment was processed due to the failure</li>
+                <li><strong>Data Consistency:</strong> Your account and loyalty points remain unchanged</li>
+                <li><strong>System Recovery:</strong> All services are ready for your next booking attempt</li>
+            </ul>
+        {% endif %}
     </div>
 
     <div class="text-center" style="margin: 40px 0;">
@@ -145,5 +188,19 @@
     </div>
 </div>
 
+<script>
+function toggleSagaLogs() {
+    const logsDiv = document.getElementById('dynamic-saga-logs-placeholder');
+    const button = document.querySelector('.saga-logs-toggle');
+    
+    if (logsDiv.classList.contains('show')) {
+        logsDiv.classList.remove('show');
+        button.innerHTML = '<i class="fas fa-chevron-down"></i> View Technical Details';
+    } else {
+        logsDiv.classList.add('show');
+        button.innerHTML = '<i class="fas fa-chevron-up"></i> Hide Technical Details';
+    }
+}
+</script>
 <script src="{% static 'js/saga_results.js' %}"></script>
 {% endblock %}

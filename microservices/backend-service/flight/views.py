@@ -91,15 +91,30 @@ def flight_search(request):
     destination_code = request.GET.get('destination', '').upper()
     depart_date_str = request.GET.get('depart_date', '')
     seat_class = request.GET.get('seat_class', 'economy')
+    trip_type = request.GET.get('trip_type', '1')  # Add trip_type parameter
+    return_date_str = request.GET.get('return_date', '')  # Add return_date parameter
+    
+    print(f"[ROUND_TRIP_DEBUG] ===== FLIGHT SEARCH API CALLED =====")
+    print(f"[ROUND_TRIP_DEBUG] Full request.GET: {dict(request.GET)}")
+    print(f"[ROUND_TRIP_DEBUG] Parameters: origin={origin_code}, dest={destination_code}")
+    print(f"[ROUND_TRIP_DEBUG] Trip type: '{trip_type}' (type: {type(trip_type)}), Return date: {return_date_str}")
     
     # Basic validation
     if not origin_code or not destination_code or not depart_date_str:
-        return Response({'error': 'Missing required parameters: origin, destination, depart_date'}, 
+        return Response({'error': 'Missing required parameters: origin, destination, depart_date'},
+                       status=status.HTTP_400_BAD_REQUEST)
+    
+    # Validate return date for round trip
+    if trip_type == '2' and not return_date_str:
+        return Response({'error': 'Return date is required for round trip'},
                        status=status.HTTP_400_BAD_REQUEST)
     
     try:
-        # Parse date
+        # Parse dates
         depart_date = datetime.strptime(depart_date_str, '%Y-%m-%d').date()
+        return_date = None
+        if trip_type == '2':
+            return_date = datetime.strptime(return_date_str, '%Y-%m-%d').date()
         
         origin = Place.objects.get(code=origin_code)
         destination = Place.objects.get(code=destination_code)
@@ -119,21 +134,67 @@ def flight_search(request):
         elif seat_class == 'first':
             flights = flights.exclude(first_fare=0).order_by('first_fare')
         
+        # Search return flights for round trip
+        flights2 = []
+        origin2 = None
+        destination2 = None
+        if trip_type == '2' and return_date:
+            print(f"[ROUND_TRIP_DEBUG] Processing return flights for trip_type={trip_type}")
+            print(f"[ROUND_TRIP_DEBUG] Return date: {return_date}, weekday: {return_date.weekday()}")
+            return_flight_day = Week.objects.get(number=return_date.weekday())
+            print(f"[ROUND_TRIP_DEBUG] Searching return flights: {destination.code} -> {origin.code}")
+            flights2_queryset = Flight.objects.filter(
+                origin=destination,  # Return flights go from destination back to origin
+                destination=origin,
+                depart_day=return_flight_day,
+                airline__icontains='American Airlines'
+            )
+            print(f"[ROUND_TRIP_DEBUG] Found {flights2_queryset.count()} return flights")
+            
+            if seat_class == 'economy':
+                flights2_queryset = flights2_queryset.exclude(economy_fare=0).order_by('economy_fare')
+            elif seat_class == 'business':
+                flights2_queryset = flights2_queryset.exclude(business_fare=0).order_by('business_fare')
+            elif seat_class == 'first':
+                flights2_queryset = flights2_queryset.exclude(first_fare=0).order_by('first_fare')
+            
+            flights2 = FlightSerializer(flights2_queryset, many=True).data
+            origin2 = PlaceSerializer(destination).data  # For return leg, origin becomes destination
+            destination2 = PlaceSerializer(origin).data  # For return leg, destination becomes origin
+
         # Add diagnostic logging for currency debugging and flight number validation
-        logger.info(f"[CURRENCY DEBUG] Found {flights.count()} flights for {origin_code} -> {destination_code}")
+        print(f"[DEBUG] Found {flights.count()} flights for {origin_code} -> {destination_code}")
+        print(f"[DEBUG] Trip type: {trip_type}")
+        if trip_type == '2':
+            print(f"[DEBUG] Return date: {return_date}")
+            print(f"[DEBUG] Found {len(flights2)} return flights for {destination_code} -> {origin_code}")
+            print(f"[DEBUG] flights2 data: {flights2[:1] if flights2 else 'None'}")
         logger.info(f"[FLIGHT NUMBER DEBUG] Validating flight number vs aircraft type display:")
         for flight in flights:
             logger.info(f"[CURRENCY DEBUG] Flight ID {flight.id}: Economy={flight.economy_fare}, Business={flight.business_fare}, First={flight.first_fare}")
             logger.info(f"[FLIGHT NUMBER DEBUG] Flight ID {flight.id}: flight_number='{flight.flight_number}', plane='{flight.plane}', airline='{flight.airline}'")
         
         flight_serializer = FlightSerializer(flights, many=True)
-        return Response({
+        
+        response_data = {
             'flights': flight_serializer.data,
             'origin': PlaceSerializer(origin).data,
             'destination': PlaceSerializer(destination).data,
             'depart_date': depart_date,
-            'seat_class': seat_class
-        })
+            'seat_class': seat_class,
+            'trip_type': trip_type
+        }
+        
+        # Add return flight data for round trip
+        if trip_type == '2':
+            response_data.update({
+                'flights2': flights2,
+                'origin2': origin2,
+                'destination2': destination2,
+                'return_date': return_date
+            })
+        
+        return Response(response_data)
         
     except ValueError:
         return Response({'error': 'Invalid date format. Use YYYY-MM-DD'},

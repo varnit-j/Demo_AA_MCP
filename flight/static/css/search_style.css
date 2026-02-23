@@ -580,3 +580,55 @@
     }*/
     /*Next css in othet css file*/
 }
+
+/* Round Trip Layout - Side by Side Panels */
+.round-trip-panels-wrapper {
+    display: flex;
+    gap: 0;
+}
+
+.round-trip-panels-wrapper .query-result-div,
+.round-trip-panels-wrapper .query-result-div-2 {
+    flex: 1;
+    width: 50% !important;
+    display: flex !important;
+}
+
+.panel-half {
+    width: 50% !important;
+}
+
+/* Ensure proper display of round trip dual panels */
+.query-trip-type-div {
+    display: flex;
+    justify-content: center;
+    background: #f8f9fa;
+    padding: 15px 0;
+    border-bottom: 2px solid #e9ecef;
+}
+
+.tabs {
+    display: flex;
+    position: relative;
+    gap: 30px;
+}
+
+.tabs a {
+    padding: 10px 15px;
+    text-decoration: none;
+    color: #333;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.tabs a.active-div {
+    color: crimson;
+}
+
+.selector {
+    position: absolute;
+    bottom: -2px;
+    height: 3px;
+    background-color: crimson;
+    transition: all 0.4s ease;
+}

@@ -1,0 +1,794 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://use.typekit.net/cav5lva.css">
+  <link rel="stylesheet" href="/static/css/layout_style.css">
+  <link rel="icon" type="image/ico" href="/static/img/favicon.ico">
+  <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+  <script type="text/javascript" src="/static/js/layout.js"></script>
+  
+    <title>Search | Flight</title>
+    <link rel="stylesheet" href="/static/css/search_style.css">
+    <link rel="stylesheet" href="/static/css/search2_style.css">
+    <!--<script src="/static/js/search.js"></script>-->
+    <script src="/static/js/search2.js"></script>
+
+</head>
+<body>
+  
+  
+  <div class="container-fluid">
+    <nav class="navbar navbar-expand-lg navbar-light">
+      <a class="navbar-brand logo-brand" href="/">
+          <img src="/static/img/American-Airlines-Logo.png" class="navbar-logo" alt="American Airlines">
+      </a>
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+    
+      <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav mr-auto">
+          <li class="nav-item active">
+            <a class="nav-link" href="/">Home</a>
+          </li>
+          <li class="nav-item ">
+            <a class="nav-link" href="/flight/bookings">My Bookings</a>
+          </li>
+          
+        </ul>
+        <ul class="navbar-nav">
+          
+            <li class="nav-item">
+              <button class="btn btn-outline-primary" style="border-radius: 25rem;" onclick="window.location.href = '/login';">
+                <svg width="1.1em" height="1.1em" viewBox="0 1.5 16 16" class="bi bi-person-fill" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                  <path fill-rule="evenodd" d="M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1H3zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/>
+                </svg>
+                Login
+              </button>
+            </li>
+          
+        </ul>
+      </div>
+    </nav>
+
+    <main>
+      
+    <section class="section section1">
+        <div class="query-data-div">
+            <div class="container">
+                <div class="trip-places">
+                    <div class="from-div text-align-left">
+                        <div class="small-label">From</div>
+                        <div class="white">Dallas (DFW)</div>
+                    </div>
+                    <div class="trip-type-div white">
+                        <div class="small-label">&nbsp;</div>
+                        
+                            <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-left-right" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                                <path fill-rule="evenodd" d="M1 11.5a.5.5 0 0 0 .5.5h11.793l-3.147 3.146a.5.5 0 0 0 .708.708l4-4a.5.5 0 0 0 0-.708l-4-4a.5.5 0 0 0-.708.708L13.293 11H1.5a.5.5 0 0 0-.5.5zm14-7a.5.5 0 0 1-.5.5H2.707l3.147 3.146a.5.5 0 1 1-.708.708l-4-4a.5.5 0 0 1 0-.708l4-4a.5.5 0 1 1 .708.708L2.707 4H14.5a.5.5 0 0 1 .5.5z"/>
+                            </svg>
+                        
+                    </div>
+                    <div class="to-div text-align-right">
+                        <div class="small-label">To</div>
+                        <div class="white">Chicago (ORD)</div>
+                    </div>
+                </div>
+                <div class="v-line"></div>
+                <div class="trip-time">
+                    <div class="depart-date-div">
+                        <div class="small-label">Depart</div>
+                        <div class="white"></div>
+                    </div>
+                    <div class="return-date-div">
+                        <div class="small-label">Return</div>
+                        <div class="white">
+                            
+                                
+                            
+                        </div>
+                    </div>
+                </div><div class="v-line"></div>
+                <div class="trip-class">
+                    <div class="return-date-div">
+                        <div class="small-label">Class</div>
+                        <div class="white">economy</div>
+                    </div>
+                </div>
+                <div class="v-line"></div>
+                <div class="trip-modify">
+                    <form action="/" method="POST">
+                        <input type="hidden" name="csrfmiddlewaretoken" value="DG6mvMxXeP0V90W1BJIvQH1oNGXRDRnn7kabe5C6CLz80A6mTL3mFLzcmJCM2Ekg">
+                        <input type="hidden" name="Origin" value="DFW">
+                        <input type="hidden" name="Destination" value="ORD">
+                        <input type="hidden" name="DepartDate" value=''>
+                        <input type="hidden" name="ReturnDate" value=''>
+                        <input type="hidden" name="SeatClass" value="economy">
+                        <input type="hidden" name="TripType" id="trip-identifier" value="2">
+                        <button class="btn spl-btn" type="submit">Modify Search</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="query-data-div2">
+            <div class="container">
+                <div class="trip-modify">
+                    <form action="/" method="POST">
+                        <input type="hidden" name="csrfmiddlewaretoken" value="DG6mvMxXeP0V90W1BJIvQH1oNGXRDRnn7kabe5C6CLz80A6mTL3mFLzcmJCM2Ekg">
+                        <input type="hidden" name="Origin" value="DFW">
+                        <input type="hidden" name="Destination" value="ORD">
+                        <input type="hidden" name="DepartDate" value=''>
+                        <input type="hidden" name="ReturnDate" value=''>
+                        <input type="hidden" name="SeatClass" value="economy">
+                        <input type="hidden" name="TripType" value="2">
+                        <button class="btn spl-btn2" type="submit">
+                            <svg width="1.3em" height="1.3em" viewBox="0 0 16 16" class="bi bi-arrow-left" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                                <path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z"/>
+                            </svg>
+                        </button>
+                    </form>
+                </div>
+                <div class="trip-data">
+                    <div class="trip-data-p" style="display: flex; color: white;">
+                        <div>Dallas</div>
+                        <div>
+                            
+                                &nbsp;
+                                <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-left-right" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                                    <path fill-rule="evenodd" d="M1 11.5a.5.5 0 0 0 .5.5h11.793l-3.147 3.146a.5.5 0 0 0 .708.708l4-4a.5.5 0 0 0 0-.708l-4-4a.5.5 0 0 0-.708.708L13.293 11H1.5a.5.5 0 0 0-.5.5zm14-7a.5.5 0 0 1-.5.5H2.707l3.147 3.146a.5.5 0 1 1-.708.708l-4-4a.5.5 0 0 1 0-.708l4-4a.5.5 0 1 1 .708.708L2.707 4H14.5a.5.5 0 0 1 .5.5z"/>
+                                </svg>
+                                &nbsp;
+                            
+                            
+                        </div>
+                        <div>Chicago</div>
+                    </div>
+                    <div class="trip-data-d" style="display: flex; font-size: .8em; color: rgb(240,240,240);">
+                        <div>
+                            
+                            
+                                |
+                                     
+                            
+                            |
+                            economy
+                        </div>
+                    </div>
+                </div>
+                <div class="trip-filter">
+                    <button class="btn spl-btn2" onclick="show_filter()">
+                        <svg width="1.3em" height="1.3em" viewBox="0 0 16 16" class="bi bi-funnel" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                            <path fill-rule="evenodd" d="M1.5 1.5A.5.5 0 0 1 2 1h12a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.128.334L10 8.692V13.5a.5.5 0 0 1-.342.474l-3 1A.5.5 0 0 1 6 14.5V8.692L1.628 3.834A.5.5 0 0 1 1.5 3.5v-2zm1 .5v1.308l4.372 4.858A.5.5 0 0 1 7 8.5v5.306l2-.666V8.5a.5.5 0 0 1 .128-.334L13.5 3.308V2h-11z"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+            <div class="query-trip-type-div">
+                <div class="tabs">
+                    <div class="selector"></div>
+                    <a href="#" class="active-div" data-trip_type="1">DFW &#8594; ORD</a>
+                    <a href="#" data-trip_type="2"> &#8594; </a>
+                </div>
+                <!--<div>
+                    <div id="flight1-btn-div" class="active-div" data-trip_type="1" onclick="trip_type_flight(this)">
+                        <span>DFW</sapn>
+                            <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                                <path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8z"></path>
+                            </svg>    
+                        <span>ORD</span>
+                    </div>
+                    <div id="flight2-btn-div" data-trip_type="2" onclick="trip_type_flight(this)">
+                        <span>ORD</sapn>
+                            <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                                <path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8z"></path>
+                            </svg>    
+                        <span>DFW</span>
+                    </div>
+                </div>-->
+            </div>
+        
+        <div class="query-result-div">
+            <div class="container">
+                <div class="row">
+                    
+                        <div class="col-lg-3 filter-div">
+                            <div class="close-filter" style="margin-top: 0;">
+                                <button class="btn b1" onclick="close_filter(this)">
+                                    <svg width="1.2em" height="1.2em" viewBox="0 0 16 16" class="bi bi-arrow-left" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                                        <path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z"/>
+                                    </svg>
+                                </button>
+                            </div>
+                            <div class="filter">
+                                <center>
+                                    <h4>Filter Results</h4>
+                                </center>
+                                <div class="filter-box">
+                                    <div class="filter-price">
+                                        <div class="font-weight-bold">Price</div>
+                                        <div>
+                                            <input type="range" class="form-control-range" min="150.0" max="200.0" value="200.0" oninput="filter()">
+                                            <div class="price-range-output">
+                                                <div class="initial-price-range">
+                                                    <span class="currency-symbol">$</span>
+                                                    <span class="initial-price-value">150.00</span>
+                                                </div>
+                                                <div class="final-price-range">
+                                                    <span class="currency-symbol">$</span>
+                                                    <span class="final-price-value"></span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div><!---->
+                                    <div class="time-slot departure-time-slot-group">
+                                        <div class="font-weight-bold">Departure Time</div>
+                                        <div style="display: flex; justify-content: space-between;">
+                                            <div class="square-box" onclick="filter(this)" data-type="departure" data-start="0" data-end="6">
+                                                <div class="filter-img-div">
+                                                    <div>
+                                                        <img src="/static/img/morning_inactive.png" alt="" data-statefor="inactive">
+                                                        <img src="/static/img/morning_active.png" alt="" data-statefor="active" style="display: none;">
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    Before 6 AM
+                                                </div>
+                                            </div>
+                                            <div class="square-box" onclick="filter(this)" data-type="departure" data-start="6" data-end="12">
+                                                <div class="filter-img-div">
+                                                    <div>
+                                                        <img src="/static/img/noon_inactive.png" alt="" data-statefor="inactive">
+                                                        <img src="/static/img/noon_active.png" alt="" data-statefor="active" style="display: none;">
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    6 am - 12 pm
+                                                </div>
+                                            </div>
+                                            <div class="square-box" onclick="filter(this)" data-type="departure" data-start="12" data-end="18">
+                                                <div class="filter-img-div">
+                                                    <div>
+                                                        <img src="/static/img/evening_inactive.png" alt="" data-statefor="inactive">
+                                                        <img src="/static/img/evening_active.png" alt="" data-statefor="active" style="display: none;">
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    12 pm - 6 pm
+                                                </div>
+                                            </div>
+                                            <div class="square-box" onclick="filter(this)" data-type="departure" data-start="18" data-end="24">
+                                                <div class="filter-img-div">
+                                                    <div>
+                                                        <img src="/static/img/night_inactive.png" alt="" data-statefor="inactive">
+                                                        <img src="/static/img/night_active.png" alt="" data-statefor="active" style="display: none;">
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    After 6 pm
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="time-slot arrival-time-slot-group">
+                                        <div class="font-weight-bold">Arrival Time</div>
+                                        <div style="display: flex; justify-content: space-between;">
+                                            <div class="square-box" onclick="filter(this)" data-type="arrival" data-start="0" data-end="6">
+                                                <div class="filter-img-div">
+                                                    <div>
+                                                        <img src="/static/img/morning_inactive.png" alt="" data-statefor="inactive">
+                                                        <img src="/static/img/morning_active.png" alt="" data-statefor="active" style="display: none;">
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    Before 6 AM
+                                                </div>
+                                            </div>
+                                            <div class="square-box" onclick="filter(this)" data-type="arrival" data-start="6" data-end="12">
+                                                <div class="filter-img-div">
+                                                    <div>
+                                                        <img src="/static/img/noon_inactive.png" alt="" data-statefor="inactive">
+                                                        <img src="/static/img/noon_active.png" alt="" data-statefor="active" style="display: none;">
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    6 am - 12 pm
+                                                </div>
+                                            </div>
+                                            <div class="square-box" onclick="filter(this)" data-type="arrival" data-start="12" data-end="18">
+                                                <div class="filter-img-div">
+                                                    <div>
+                                                        <img src="/static/img/evening_inactive.png" alt="" data-statefor="inactive">
+                                                        <img src="/static/img/evening_active.png" alt="" data-statefor="active" style="display: none;">
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    12 pm - 6 pm
+                                                </div>
+                                            </div>
+                                            <div class="square-box" onclick="filter(this)" data-type="arrival" data-start="18" data-end="24">
+                                                <div class="filter-img-div">
+                                                    <div>
+                                                        <img src="/static/img/night_inactive.png" alt="" data-statefor="inactive">
+                                                        <img src="/static/img/night_active.png" alt="" data-statefor="active" style="display: none;">
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    After 6 pm
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="clr-filter-div">
+                                    <center>
+                                        <button class="btn-link">Reset Filters</button>
+                                    </center>
+                                </div>
+                            </div>
+                            <div class="close-filter">
+                                <button class="btn btn-primary b2" onclick="close_filter(this)">
+                                    SHOW RESULTS
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-lg-9 actual-result-div">
+                            <div class="sort-div" style="display:none">
+                                <div class="sort-label">Sort By:</div>
+                                <div style="display: flex;">
+                                    <div class="sort-depart">
+                                        Depart
+                                        <span>--</span>
+                                    </div>
+                                    <div class="sort-arrive">
+                                        Arrive
+                                        <span>--</span>
+                                    </div>
+                                </div>
+                                <div class="sort-price">
+                                    Price
+                                    <span><!--&#8593;--><!--&#8595;--></span>
+                                </div>
+                            </div>
+
+
+                            
+                                <div class="sort-div">
+                                <div class="flight-company">
+                                    <div class="sort-label">Sort By:</div>
+                                </div>
+                                <div class="flight-time">
+                                    <div class="flight-origin-time sort-depart">
+                                        Depart
+                                        <span></span>
+                                    </div>
+                                    <div class="flight-stops"></div>
+                                    <div class="flight-destination-time sort-arrive">
+                                        Arrive
+                                        <span></span>
+                                    </div>
+                                </div>
+                                <div class="flight-details">
+                                    Price
+                                    <span><!--&#8593;--><!--&#8595;--></span>
+                                </div>
+                            </div>
+                            
+
+
+
+
+                            <div id="flights_div">
+                                
+
+                                    <div class="each-flight-div-box show">
+                                        <div class="each-flight-div" onclick="media_click(this)">
+                                            <div class="flight-company">
+                                                <div class="flight-icon">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" focusable="false" width="1.5em" height="1.3em" style="-ms-transform: rotate(360deg); -webkit-transform: rotate(360deg); transform: rotate(360deg);" preserveAspectRatio="xMidYMid meet" viewBox="0 0 440 384"><path d="M14 335h405v43H14v-43zm417.5-199.5q3.5 12.5-3 24T409 175l-114 30l-92 25l-114 30l-34 10l-16-29l-39-67l31-9l42 33l106-28L91 17l41-11l147 137l113-30q13-4 24.5 3t15 19.5z" fill="#434445"/><rect x="0" y="0" width="440" height="384" fill="rgba(0, 0, 0, 0)" /></svg>
+                                                </div>
+                                                <div class="company-details">
+                                                    <div class="company-name">American Airlines</div>
+                                                    <div class="plane-name">
+                                                        
+                                                            AA328 (Boeing 737-800)
+                                                        
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="flight-time flight-time-div">
+                                                <div class="flight-origin-time">
+                                                    <div class="flight-time">
+                                                        <h5>08:09</h5>
+                                                    </div>
+                                                    <div class="flight-place">
+                                                        Dallas
+                                                    </div>
+                                                </div>
+                                                <div class="flight-stops tooltip">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="34" height="24" viewBox="0 0 24 24">
+                                                        <path d="M13,9.03544443 C14.6961471,9.27805926 16,10.736764 16,12.5 C16,14.263236 14.6961471,15.7219407 13,15.9645556 L13,21.5207973 C13,21.7969397 12.7761424,22.0207973 12.5,22.0207973 C12.2238576,22.0207973 12,21.7969397 12,21.5207973 L12,15.9645556 C10.3038529,15.7219407 9,14.263236 9,12.5 C9,10.736764 10.3038529,9.27805926 12,9.03544443 L12,3.5 C12,3.22385763 12.2238576,3 12.5,3 C12.7761424,3 13,3.22385763 13,3.5 L13,9.03544443 L13,9.03544443 Z M12.5,15 C13.8807119,15 15,13.8807119 15,12.5 C15,11.1192881 13.8807119,10 12.5,10 C11.1192881,10 10,11.1192881 10,12.5 C10,13.8807119 11.1192881,15 12.5,15 Z" transform="rotate(90 12.5 12.51)"/>
+                                                    </svg>
+                                                    <span class="tooltiptext" data-value="2:33:00"></span><!--07 hrs 50 mins-->
+                                                </div>
+                                                <div class="flight-destination-time">
+                                                    <div class="flight-time">
+                                                        <h5>10:42</h5>
+                                                    </div>
+                                                    <div class="flight-place">
+                                                        Chicago
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="flight-details">
+                                                <div class="flight-price">
+                                                    <h5>
+                                                        $
+                                                        <span>
+                                                            150.00
+                                                            
+                                                            
+                                                        </span>
+                                                    </h5>
+                                                </div>
+                                                <div class="flight-details-btn">
+
+
+                                                    
+                                                        
+                                                        <input type="radio" class="flight1-radio r-b" name="test1" value="37972" data-plane='Boeing 737-800' data-depart='' data-arrive='' data-fare=" 600.0 " checked>
+                                                    
+
+
+                                                    
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                
+
+                                    <div class="each-flight-div-box show">
+                                        <div class="each-flight-div" onclick="media_click(this)">
+                                            <div class="flight-company">
+                                                <div class="flight-icon">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" focusable="false" width="1.5em" height="1.3em" style="-ms-transform: rotate(360deg); -webkit-transform: rotate(360deg); transform: rotate(360deg);" preserveAspectRatio="xMidYMid meet" viewBox="0 0 440 384"><path d="M14 335h405v43H14v-43zm417.5-199.5q3.5 12.5-3 24T409 175l-114 30l-92 25l-114 30l-34 10l-16-29l-39-67l31-9l42 33l106-28L91 17l41-11l147 137l113-30q13-4 24.5 3t15 19.5z" fill="#434445"/><rect x="0" y="0" width="440" height="384" fill="rgba(0, 0, 0, 0)" /></svg>
+                                                </div>
+                                                <div class="company-details">
+                                                    <div class="company-name">American Airlines</div>
+                                                    <div class="plane-name">
+                                                        
+                                                            AA328B (Boeing 737-800)
+                                                        
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="flight-time flight-time-div">
+                                                <div class="flight-origin-time">
+                                                    <div class="flight-time">
+                                                        <h5>13:00</h5>
+                                                    </div>
+                                                    <div class="flight-place">
+                                                        Dallas
+                                                    </div>
+                                                </div>
+                                                <div class="flight-stops tooltip">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="34" height="24" viewBox="0 0 24 24">
+                                                        <path d="M13,9.03544443 C14.6961471,9.27805926 16,10.736764 16,12.5 C16,14.263236 14.6961471,15.7219407 13,15.9645556 L13,21.5207973 C13,21.7969397 12.7761424,22.0207973 12.5,22.0207973 C12.2238576,22.0207973 12,21.7969397 12,21.5207973 L12,15.9645556 C10.3038529,15.7219407 9,14.263236 9,12.5 C9,10.736764 10.3038529,9.27805926 12,9.03544443 L12,3.5 C12,3.22385763 12.2238576,3 12.5,3 C12.7761424,3 13,3.22385763 13,3.5 L13,9.03544443 L13,9.03544443 Z M12.5,15 C13.8807119,15 15,13.8807119 15,12.5 C15,11.1192881 13.8807119,10 12.5,10 C11.1192881,10 10,11.1192881 10,12.5 C10,13.8807119 11.1192881,15 12.5,15 Z" transform="rotate(90 12.5 12.51)"/>
+                                                    </svg>
+                                                    <span class="tooltiptext" data-value="2:33:00"></span><!--07 hrs 50 mins-->
+                                                </div>
+                                                <div class="flight-destination-time">
+                                                    <div class="flight-time">
+                                                        <h5>15:33</h5>
+                                                    </div>
+                                                    <div class="flight-place">
+                                                        Chicago
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="flight-details">
+                                                <div class="flight-price">
+                                                    <h5>
+                                                        $
+                                                        <span>
+                                                            170.00
+                                                            
+                                                            
+                                                        </span>
+                                                    </h5>
+                                                </div>
+                                                <div class="flight-details-btn">
+
+
+                                                    
+                                                        
+                                                        <input type="radio" class="flight1-radio r-b" name="test1" value="37973" data-plane='Boeing 737-800' data-depart='' data-arrive='' data-fare=" 680.0 " >
+                                                    
+
+
+                                                    
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                
+
+                                    <div class="each-flight-div-box show">
+                                        <div class="each-flight-div" onclick="media_click(this)">
+                                            <div class="flight-company">
+                                                <div class="flight-icon">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" focusable="false" width="1.5em" height="1.3em" style="-ms-transform: rotate(360deg); -webkit-transform: rotate(360deg); transform: rotate(360deg);" preserveAspectRatio="xMidYMid meet" viewBox="0 0 440 384"><path d="M14 335h405v43H14v-43zm417.5-199.5q3.5 12.5-3 24T409 175l-114 30l-92 25l-114 30l-34 10l-16-29l-39-67l31-9l42 33l106-28L91 17l41-11l147 137l113-30q13-4 24.5 3t15 19.5z" fill="#434445"/><rect x="0" y="0" width="440" height="384" fill="rgba(0, 0, 0, 0)" /></svg>
+                                                </div>
+                                                <div class="company-details">
+                                                    <div class="company-name">American Airlines</div>
+                                                    <div class="plane-name">
+                                                        
+                                                            AA328C (Boeing 737-800)
+                                                        
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="flight-time flight-time-div">
+                                                <div class="flight-origin-time">
+                                                    <div class="flight-time">
+                                                        <h5>20:00</h5>
+                                                    </div>
+                                                    <div class="flight-place">
+                                                        Dallas
+                                                    </div>
+                                                </div>
+                                                <div class="flight-stops tooltip">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="34" height="24" viewBox="0 0 24 24">
+                                                        <path d="M13,9.03544443 C14.6961471,9.27805926 16,10.736764 16,12.5 C16,14.263236 14.6961471,15.7219407 13,15.9645556 L13,21.5207973 C13,21.7969397 12.7761424,22.0207973 12.5,22.0207973 C12.2238576,22.0207973 12,21.7969397 12,21.5207973 L12,15.9645556 C10.3038529,15.7219407 9,14.263236 9,12.5 C9,10.736764 10.3038529,9.27805926 12,9.03544443 L12,3.5 C12,3.22385763 12.2238576,3 12.5,3 C12.7761424,3 13,3.22385763 13,3.5 L13,9.03544443 L13,9.03544443 Z M12.5,15 C13.8807119,15 15,13.8807119 15,12.5 C15,11.1192881 13.8807119,10 12.5,10 C11.1192881,10 10,11.1192881 10,12.5 C10,13.8807119 11.1192881,15 12.5,15 Z" transform="rotate(90 12.5 12.51)"/>
+                                                    </svg>
+                                                    <span class="tooltiptext" data-value="2:33:00"></span><!--07 hrs 50 mins-->
+                                                </div>
+                                                <div class="flight-destination-time">
+                                                    <div class="flight-time">
+                                                        <h5>22:33</h5>
+                                                    </div>
+                                                    <div class="flight-place">
+                                                        Chicago
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="flight-details">
+                                                <div class="flight-price">
+                                                    <h5>
+                                                        $
+                                                        <span>
+                                                            200.00
+                                                            
+                                                            
+                                                        </span>
+                                                    </h5>
+                                                </div>
+                                                <div class="flight-details-btn">
+
+
+                                                    
+                                                        
+                                                        <input type="radio" class="flight1-radio r-b" name="test1" value="37974" data-plane='Boeing 737-800' data-depart='' data-arrive='' data-fare=" 800.0 " >
+                                                    
+
+
+                                                    
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                
+                            </div>
+                        </div>
+                    
+                </div>
+            </div>
+        </div>
+        
+            <div class="query-result-div-2" style="display: none;">
+                <div class="container">
+                    <div class="row">
+                        
+                            <div style="height: 100%; width:100%; padding: 10%;">
+                                <div style="text-align: center; margin: auto;">
+                                    <svg width="4em" height="4em" viewBox="0 0 16 16" class="bi bi-exclamation-circle" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                                        <path fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                                        <path d="M7.002 11a1 1 0 1 1 2 0 1 1 0 0 1-2 0zM7.1 4.995a.905.905 0 1 1 1.8 0l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 4.995z"/>
+                                    </svg>
+                                    <br><br>
+                                    <h3>Sorry, No Flight for this Search</h3>
+                                    <p>
+                                        We cannnot find any flights for the cabin class of your search. Please modify your search criteria and try again.
+                                    </p>
+                                </div>
+                            </div>
+                        
+                    </div>
+                </div>
+            </div>
+            <div class="selection-div">
+                <div class="col-3 selection1">
+                    <div class="white">
+                        <div>
+                            <span>DFW</span>
+                            <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                                <path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8z"/>
+                            </svg>
+                            <span>ORD</span>&nbsp;&nbsp;@&nbsp;&nbsp;$
+                            <span id="select-f1-fare">
+                                
+                                    0.00
+                                
+                            </span><!---->
+                        </div>
+                        <div class="white-2">
+                            <span id="select-f1-plane">
+                                
+                                    
+                                
+                            </span><!---->
+                            &nbsp;&nbsp;
+                            <span id="select-f1-depart"></span><!---->
+                            •
+                            <span id="select-f1-arrive"></span><!---->
+                        </div>
+                    </div>
+                </div>
+                <div class="col-3 selection2">
+                    <div class="white">
+                        <div>
+                            <span>ORD</span>
+                            <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                                <path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8z"/>
+                            </svg>
+                            <span>DFW</span>
+                            &nbsp;&nbsp;@&nbsp;&nbsp;$
+                            
+                        </div>
+                        <div class="white-2">
+                            
+                                <span id="select-f2-plane" style="letter-spacing: 2px!important;">--</span><!---->
+                            
+                        </div>
+                    </div>
+                </div>
+                <div class="col-3 selection-total">
+                    <div class="white">
+                        <div class="white-2">
+                            <span>TOTAL FARE</span>
+                        </div>
+                        <div>
+                            <span>$
+                                <span id="select-total-fare">
+                                    
+                                        
+                                            
+                                        
+                                    
+                                </span>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-3 selection-confirm">
+                    <div class="white">
+                        <div>
+                            <form action="/review" method="GET">
+                                <input type="hidden" name="flight1Id" value="" id="flt1">
+                                <input type="hidden" name="flight1Date", value="">
+                                <input type="hidden" name="flight2Id" value="" id="flt2">
+                                <input type="hidden" name="flight2Date", value="">
+                                <input type="hidden" name="seatClass" value="economy">
+                                <button class="btn btn-light" type="submit">Continue &#8594;</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <div class="selection-media">
+                    <div>
+                        <div class="col-7" style="display: flex; justify-content: space-between;">
+                            <div class="col-5" style="padding: 0; text-align: left;">
+                                <div>TOTAL</div>
+                                <div>AMOUNT</div>
+                            </div>
+                            <div class="col-7" style="font-size: 1.2em; font-weight: bold; display: flex; padding: 0;">
+                                <span style="margin: auto;">$
+                                    <span id="select-total-fare-media">
+                                        
+                                            
+                                                
+                                            
+                                        
+                                    </span>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="col-5" style="display: flex;">
+                            <div style="margin: auto;">
+                                <form action="/review" method="GET">
+                                    <input type="hidden" name="flight1Id" value="" id="flt1">
+                                    <input type="hidden" name="flight1Date", value="">
+                                    <input type="hidden" name="flight2Id" value="" id="flt2">
+                                    <input type="hidden" name="flight2Date", value="">
+                                    <input type="hidden" name="seatClass" value="economy">
+                                    <button class="btn btn-light" type="submit">Continue &#8594;</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        
+    </section>
+
+    </main>
+
+    <footer>
+      <div class="container">
+        <div>
+          <div class="logo-container">
+            <img src="/static/img/American-Airlines-Logo.png" class="footer-logo" alt="American Airlines">
+          </div>
+          <div class="footer-content">
+            <div class="links-container">
+              <div>
+                <ul class="link-list">
+                  <li class="list-item"><a class="footer-links" href="/contact">Contact Us</a></li>
+                  <li class="list-item"><a class="footer-links" href="/about-us">About Us</a></li>
+                  <li class="list-item"><a class="footer-links" href="/privacy-policy">Privacy Policy</a></li>
+                  <li class="list-item"><a class="footer-links" href="/terms-and-conditions">Terms &amp; Conditions</a></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+          <div class="social-links">
+            <div class="social-icons">
+              <a href="#" class="social-icon">
+                <svg width="20" height="20" viewBox="0 0 8 16" xmlns="http://www.w3.org/2000/svg">
+                  <path fill="#1A1A1A" d="m2 5.33333333h-2v2.66666667h2v8h3.33333333v-8h2.428l.23866667-2.66666667h-2.66666667v-1.11133333c0-.63666667.128-.88866667.74333334-.88866667h1.92333333v-3.33333333h-2.53866667c-2.39733333 0-3.46133333 1.05533333-3.46133333 3.07666667z"></path>
+                </svg>
+              </a>
+              <a href="#" class="social-icon">
+                <svg width="20" height="20" viewBox="0 -1 16 14" xmlns="http://www.w3.org/2000/svg">
+                  <path fill="#1A1A1A" d="m16 1.70466667c-.5886667.26133333-1.2213333.43733333-1.8853333.51666666.678-.406 1.1986666-1.04933333 1.4433333-1.816-.634.376-1.3366667.64933334-2.0846667.79666667-.598-.638-1.452-1.03666667-2.396-1.03666667-2.1193333 0-3.67666663 1.97733334-3.19799997 4.03-2.72733333-.13666666-5.146-1.44333333-6.76533333-3.42933333-.86 1.47533333-.446 3.40533333 1.01533333 4.38266667-.53733333-.01733334-1.044-.16466667-1.486-.41066667-.036 1.52066667 1.054 2.94333333 2.63266667 3.26-.462.12533333-.968.15466667-1.48266667.056.41733334 1.304 1.62933334 2.2526667 3.06666667 2.2793333-1.38 1.082-3.11866667 1.5653334-4.86 1.36 1.45266667.9313334 3.17866667 1.4746667 5.032 1.4746667 6.0946667 0 9.538-5.14733333 9.33-9.764.6413333-.46333333 1.198-1.04133333 1.638-1.69933333z"></path>
+                </svg>
+              </a>
+              <a href="#" class="social-icon">
+                <svg height="50" width="50" viewBox="10 22 53 30" xmlns="http://www.w3.org/2000/svg">
+                  <g fill="none" fill-rule="evenodd" transform="translate(-.443)">
+                    <path d="m.943 0h48v48h-48z"></path><path d="m29.75 14.319c1.159.053 1.789.246 2.208.41.555.215.951.473 1.367.889s.674.812.89 1.367c.163.42.356 1.05.41 2.209.049 1.087.065 1.514.068 3.676v2.26c-.003 2.161-.019 2.589-.069 3.676-.053 1.16-.246 1.79-.41 2.208-.215.555-.473.952-.889 1.368s-.812.674-1.367.89c-.42.162-1.05.356-2.209.409-1.087.05-1.514.065-3.676.069h-2.26c-2.162-.004-2.589-.02-3.676-.069-1.16-.053-1.789-.247-2.208-.41-.555-.215-.952-.473-1.368-.89-.416-.415-.674-.812-.89-1.367-.162-.419-.356-1.049-.409-2.208-.055-1.212-.068-1.604-.07-4.498v-.308c0-3.176.013-3.552.07-4.806.053-1.16.247-1.79.41-2.209.215-.555.473-.95.89-1.367.415-.416.812-.674 1.367-.89.419-.163 1.049-.356 2.208-.41 1.213-.055 1.605-.068 4.498-.069h.308c3.176 0 3.552.012 4.806.07zm-4.783 3.593c-3.376 0-6.112 2.736-6.112 6.111 0 3.376 2.736 6.112 6.112 6.112 3.375 0 6.112-2.736 6.112-6.112 0-3.375-2.737-6.111-6.112-6.111zm0 2.144c2.191 0 3.967 1.776 3.967 3.967 0 2.192-1.776 3.968-3.967 3.968s-3.968-1.776-3.968-3.968c0-2.19 1.777-3.967 3.968-3.967zm6.3-3.844c-.781 0-1.415.634-1.415 1.416s.634 1.416 1.416 1.416 1.415-.634 1.415-1.416-.633-1.416-1.415-1.416z" fill="#1A1A1A"></path>
+                  </g>
+                </svg>
+              </a>
+              <a href="#" class="social-icon">
+                <svg width="20" height="20" viewBox="0 0 16 12" xmlns="http://www.w3.org/2000/svg">
+                  <path fill="#1A1A1A" d="m13.0766667.12266667c-2.4026667-.164-7.75400003-.16333334-10.15333337 0-2.598.17733333-2.904 1.74666666-2.92333333 5.87733333.01933333 4.1233333.32266667 5.6993333 2.92333333 5.8773333 2.4.1633334 7.75066667.164 10.15333337 0 2.598-.1773333 2.904-1.7466666 2.9233333-5.8773333-.0193333-4.12333333-.3226667-5.69933333-2.9233333-5.87733333zm-7.0766667 8.544v-5.33333334l5.3333333 2.662z"></path>
+                </svg>
+              </a>
+              <a href="#" class="social-icon">
+                <svg height="25" width="20" viewBox="0 2 20 20" xmlns="http://www.w3.org/2000/svg">
+                  <g fill="none" fill-rule="evenodd" transform="translate(-12 -12)">
+                    <path d="m0 0h44v44h-44z"></path>
+                    <path d="m12.504 18.413h3.899v13.587h-3.899zm1.85-1.7h-.028c-1.411 0-2.326-1.038-2.326-2.353 0-1.342.942-2.36 2.381-2.36 1.438 0 2.323 1.015 2.35 2.356 0 1.315-.912 2.358-2.377 2.358zm17.646 15.287h-4.42v-7.032c0-1.84-.692-3.095-2.212-3.095-1.163 0-1.81.847-2.11 1.665-.114.292-.096.7-.096 1.11v7.352h-4.38s.057-12.455 0-13.587h4.38v2.132c.259-.932 1.658-2.263 3.89-2.263 2.771 0 4.948 1.956 4.948 6.163z" fill="#1A1A1A"></path>
+                  </g>
+                </svg>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </footer>
+  </div>
+</body>
+</html>

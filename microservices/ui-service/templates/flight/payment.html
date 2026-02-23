@@ -75,21 +75,6 @@
                                         <strong>Pay with Card</strong> - Complete payment now
                                     </label>
                                 </div>
-                                <div class="form-check mt-2">
-                                    <input class="form-check-input" type="radio" name="payment_method" id="counter_payment" value="counter" onchange="togglePaymentMethod()">
-                                    <label class="form-check-label" for="counter_payment">
-                                        <strong>Pay at Airport Counter</strong> - Hold ticket and pay remaining amount at airport
-                                    </label>
-                                </div>
-                                <div id="counter_payment_info" class="mt-2" style="display: none;">
-                                    <div class="alert alert-info">
-                                        <small>
-                                            <i class="fas fa-info-circle"></i>
-                                            Your ticket will be placed on hold. You must complete payment at the airport counter before your flight departure.
-                                            Points will be redeemed immediately, but remaining amount must be paid at counter.
-                                        </small>
-                                    </div>
-                                </div>
                             </div>
                         </div>
                         
@@ -256,56 +241,16 @@
             calculateHybridPayment();
         }
 
-        // Payment method toggle functionality
+        // Payment method toggle functionality (simplified - only card payment now)
         function togglePaymentMethod() {
-            const cardPayment = document.getElementById('card_payment').checked;
-            const counterPayment = document.getElementById('counter_payment').checked;
-            
-            // Get all card payment sections
-            const cardSections = [
-                'card_payment_section',
-                'card_holder_section',
-                'expiry_cvv_section'
-            ];
-            
-            // Toggle visibility and required attributes
-            cardSections.forEach(sectionId => {
-                const section = document.getElementById(sectionId);
-                if (section) {
-                    section.style.display = cardPayment ? 'block' : 'none';
-                }
-            });
-            
-            // Toggle required attributes for card fields
+            // Since only card payment is available, ensure all card fields are required
             const cardFields = ['card_number', 'cardHolderName', 'expiry_month', 'expiry_year', 'cvv_number'];
             cardFields.forEach(fieldId => {
                 const field = document.getElementById(fieldId);
                 if (field) {
-                    if (cardPayment) {
-                        field.setAttribute('required', 'required');
-                    } else {
-                        field.removeAttribute('required');
-                    }
+                    field.setAttribute('required', 'required');
                 }
             });
-            
-            // Show/hide counter payment info
-            const counterInfo = document.getElementById('counter_payment_info');
-            if (counterInfo) {
-                counterInfo.style.display = counterPayment ? 'block' : 'none';
-            }
-            
-            // Update button text
-            const paymentButton = document.getElementById('payment_button');
-            if (paymentButton) {
-                if (counterPayment) {
-                    paymentButton.textContent = 'Hold Ticket & Pay at Counter';
-                    paymentButton.className = 'btn btn-warning btn-block';
-                } else {
-                    paymentButton.textContent = 'Make Payment';
-                    paymentButton.className = 'btn btn-primary';
-                }
-            }
         }
 
         // Initialize on page load
