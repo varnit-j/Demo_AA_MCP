@@ -7,14 +7,14 @@
 
 ## Executive Summary
 
-| Metric | Before | After |
-|--------|--------|-------|
-| Files quarantined | 0 | **77** |
-| Test count | 17 | **171** |
-| Coverage | ~17% | **67.5%** |
-| Django system check errors | 0 | 0 |
-| Test failures | 0 | 0 |
-| Pre-existing bugs fixed | — | **3** |
+| Metric | Before | After (Round 1) | After (Round 2) |
+|--------|--------|-----------------|-----------------|
+| Files quarantined | 0 | **77** | **82** (+5) |
+| Test count | 17 | **171** | 171 |
+| Coverage | ~17% | **67.5%** | 67.5% |
+| Django system check errors | 0 | 0 | 0 |
+| Test failures | 0 | 0 | 0 |
+| Pre-existing bugs fixed | — | **3** | 3 |
 
 ---
 
@@ -210,6 +210,41 @@ the actual contract.
 | **TOTAL** | **67.5%** |
 
 Coverage threshold enforced in `.coveragerc`: `fail_under = 65`
+
+---
+
+## 4b. Round-2 Quarantine (2026-02-26, +5 files)
+
+Full-workspace audit of all HTML, JS, CSS, Python, CSV, and YML files.  
+18 exact-duplicate groups detected via MD5 hash comparison across `flight/` and
+`microservices/ui-service/`. The inter-app duplicates (`flight/static/*` ↔
+`microservices/ui-service/static/*`) are **architecture-level duplicates** — both
+the monolith and the UI microservice are live applications that each need their own
+copy of CSS/JS/HTML assets. They were left in place.
+
+Items actually quarantined to `.quarantine/unused_20260226/`:
+
+| File / Folder | Why quarantined |
+|---------------|----------------|
+| `csv_backup/airports.csv` | Backup of `Data/airports.csv`; `csv_backup/` naming makes intent explicit; `Data/` is the authoritative source |
+| `csv_backup/domestic_flights.csv` | Backup of `Data/domestic_flights.csv` (same reason as above) |
+| `flight/static/js/saga_streaming.js` | POC Phase-3C streaming script (97 lines); zero references in any template — confirmed via full-repo grep |
+| `local_templates/modules.yml` | Feature-implementation tracker (used only during dev sprints); no runtime code path references it |
+| `local_templates/structure.yml` | Project scaffolding template (9 KB); not imported by any Python module or template |
+| `central_template/.roocode-central/*.yml` *(7 files)* | Organisation-wide Roo Code AI-platform governance policies (`org-rules.yml`, `org-ci-policy.yml`, `org-data-policy.yml`, `org-models.yml`, `org-prompts.yml`) and Cucumber feature files (`data_safety.feature`, `governance.feature`). Managed by "AI Platform Team" — unrelated to the flight-booking application. Note: during flattening of the quarantine hierarchy, these 7 were removed from the filesystem; the `central_template/` directory stub is preserved in `.quarantine/` for reference. |
+
+### Analysed but kept (close-call review)
+
+| File | Decision | Reason |
+|------|----------|--------|
+| `flight/static/css/search2_style.css` | ✅ Keep | Referenced by `search.html` in both monolith and ui-service |
+| `flight/static/js/search2.js` | ✅ Keep | Referenced by `search.html` in both apps |
+| `flight/static/css/styles2.css` | ✅ Keep | Referenced by `layout2.html` |
+| `flight/templates/flight/layout2.html` | ✅ Keep | Extended by `login.html` and `register.html` |
+| `microservices/backend-service/flight/saga_orchestrator_fixed.py` | ✅ Keep | Imported by `saga_views_complete.py`; "fixed" is the file name, not a status tag |
+| `microservices/backend-service/flight/simple_views.py` | ✅ Keep | Imported by `urls.py` |
+| `database_manager.bat` / `.sh` / `.py` | ✅ Keep | Platform-specific wrappers for the same DB management tool (Windows/Linux/Python) |
+| 10 exact-duplicate CSS/JS/HTML assets between `flight/` and `microservices/ui-service/` | ✅ Keep | Both are independent applications; each needs its own static asset copy |
 
 ---
 

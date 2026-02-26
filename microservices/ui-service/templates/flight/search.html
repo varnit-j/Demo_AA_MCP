@@ -793,6 +793,7 @@
                         </div>
                     </div>
                 </div>
+                {% if trip_type == '2' %}
                 <div class="col-3 selection2">
                     <div class="white">
                         <div>
@@ -803,7 +804,6 @@
                             <span>{{origin.code|upper}}</span>
                             &nbsp;&nbsp;@&nbsp;&nbsp;$
                             {% if flights2 %}
-                                &nbsp;&nbsp;@&nbsp;&nbsp;$
                                 <span id="select-f2-fare">
                                     {% if seat == "economy" %}
                                         {{flights2.0.economy_fare|format_usd}}
@@ -834,6 +834,7 @@
                         </div>
                     </div>
                 </div>
+                {% endif %}
                 <div class="col-3 selection-total">
                     <div class="white">
                         <div class="white-2">
