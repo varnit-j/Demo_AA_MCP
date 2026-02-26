@@ -34,6 +34,24 @@ def award_miles(request):
             existing_txn = LoyaltyTransaction.objects.filter(transaction_id=f"SAGA-{correlation_id[:8]}").count()
             logger.info(f"[LOYALTY IDEMPOTENCY DEBUG] AwardMiles precheck correlation_id={correlation_id} SagaMilesAward.count={existing_awards} LoyaltyTransaction(SAGA-*).count={existing_txn}")
 
+            # IDEMPOTENCY GUARD: If miles were already awarded for this correlation_id, return existing result
+            if existing_awards > 0:
+                logger.info(f"[SAGA LOYALTY] ✅ IDEMPOTENT: miles already awarded for {correlation_id} ({existing_awards} record(s)) - skipping re-award")
+                awards = list(SagaMilesAward.objects.filter(correlation_id=correlation_id))
+                total = sum(a.miles_awarded for a in awards)
+                acct = awards[0].account if awards else None
+                return JsonResponse({
+                    "success": True,
+                    "correlation_id": correlation_id,
+                    "miles_awarded": total,
+                    "flight1_miles": awards[0].miles_awarded if len(awards) > 0 else total,
+                    "flight2_miles": awards[1].miles_awarded if len(awards) > 1 else 0,
+                    "original_balance": awards[0].original_balance if awards else 0,
+                    "new_balance": acct.points_balance if acct else 0,
+                    "is_round_trip": len(awards) > 1,
+                    "message": f"Idempotent: miles already awarded ({total} miles)"
+                })
+
         logger.info(f"[SAGA LOYALTY] 📝 Logging detailed transaction for loyalty point history.")
         
         # POC DIAGNOSTIC: Track loyalty service execution time
@@ -117,7 +135,7 @@ def award_miles(request):
                 transaction_type='flight_booking',
                 points_earned=miles_to_award_1,
                 amount=flight_fare,
-                description=f'✈️ SAGA Flight 1 booking - ${flight_fare:.2f} -> {miles_to_award_1} miles'
+                description=f'✈️ SAGA Flight 1 booking - ${flight_fare:.2f} -> {miles_to_award_1} miles (0.5:1)'
             )
             logger.info(f"[SAGA LOYALTY] 📝 Created transaction record for Flight 1: {transaction_1.transaction_id}")
             
@@ -152,7 +170,7 @@ def award_miles(request):
                 transaction_type='flight_booking',
                 points_earned=miles_to_award_2,
                 amount=flight_fare_2,
-                description=f'✈️ SAGA Flight 2 booking - ${flight_fare_2:.2f} -> {miles_to_award_2} miles'
+                description=f'✈️ SAGA Flight 2 booking - ${flight_fare_2:.2f} -> {miles_to_award_2} miles (0.5:1)'
             )
             logger.info(f"[SAGA LOYALTY] 📝 Created transaction record for Flight 2: {transaction_2.transaction_id}")
             
@@ -218,7 +236,7 @@ def award_miles(request):
                 transaction_type='flight_booking',
                 points_earned=miles_to_award,
                 amount=flight_fare,
-                description=f'✈️ SAGA Flight booking - ${flight_fare:.2f} -> {miles_to_award} miles'
+                description=f'✈️ SAGA Flight booking - ${flight_fare:.2f} -> {miles_to_award} miles (0.5:1)'
             )
             logger.info(f"[SAGA LOYALTY] 📝 Created transaction record: {transaction.transaction_id}")
             
@@ -300,68 +318,90 @@ def reverse_miles(request):
         logger.info(f"[SAGA COMPENSATION] 🔄 ReverseMiles compensation initiated for correlation_id: {correlation_id}")
         logger.info(f"[SAGA COMPENSATION] 📋 Compensation reason: {compensation_reason}")
         
-        # Find the original SAGA award
-        try:
-            # DIAGNOSTIC: Check all SAGA awards for this correlation_id
-            all_awards = SagaMilesAward.objects.filter(correlation_id=correlation_id)
-            logger.info(f"[DIAGNOSTIC] Found {all_awards.count()} SAGA awards for correlation_id {correlation_id}")
-            for award in all_awards:
-                logger.info(f"[DIAGNOSTIC] Award ID {award.id}: status={award.status}, miles={award.miles_awarded}")
-            
-            saga_award = SagaMilesAward.objects.get(correlation_id=correlation_id, status='AWARDED')
-            logger.info(f"[SAGA COMPENSATION] 🎯 Found SAGA award record: {saga_award.id}")
-        except SagaMilesAward.DoesNotExist:
+        # IDEMPOTENCY GUARD: If compensation already ran, return existing result without re-processing
+        if correlation_id:
+            already_reversed = SagaMilesAward.objects.filter(
+                correlation_id=correlation_id, status='REVERSED'
+            ).exists()
+            already_comp_txn = LoyaltyTransaction.objects.filter(
+                transaction_id=f"COMP-{correlation_id[:8]}"
+            ).exists()
+
+            if already_reversed or already_comp_txn:
+                logger.info(f"[SAGA COMPENSATION] ✅ IDEMPOTENT: compensation already completed for {correlation_id} - skipping re-processing")
+                reversed_records = SagaMilesAward.objects.filter(correlation_id=correlation_id, status='REVERSED')
+                total_reversed = sum(r.miles_awarded for r in reversed_records)
+                acct = reversed_records.first().account if reversed_records.exists() else None
+                return JsonResponse({
+                    "success": True,
+                    "correlation_id": correlation_id,
+                    "miles_reversed": total_reversed,
+                    "awards_reversed": reversed_records.count(),
+                    "original_balance": (acct.points_balance + total_reversed) if acct else 0,
+                    "new_balance": acct.points_balance if acct else 0,
+                    "message": f"Idempotent: compensation already applied ({total_reversed} miles reversed)"
+                })
+
+        # Find the original SAGA award(s) - may be multiple for round-trip bookings
+        all_awards = SagaMilesAward.objects.filter(correlation_id=correlation_id)
+        logger.info(f"[DIAGNOSTIC] Found {all_awards.count()} SAGA awards for correlation_id {correlation_id}")
+        for award in all_awards:
+            logger.info(f"[DIAGNOSTIC] Award ID {award.id}: status={award.status}, miles={award.miles_awarded}")
+
+        awarded_records = list(all_awards.filter(status='AWARDED'))
+        if not awarded_records:
             logger.warning(f"[SAGA COMPENSATION] ⚠️ No SAGA award found for {correlation_id}")
             logger.info(f"[SAGA COMPENSATION] ✅ No compensation needed - no miles were awarded")
             return JsonResponse({
-                "success": True,  # Return success even if no award found
+                "success": True,
                 "correlation_id": correlation_id,
                 "message": "No miles award found to reverse - compensation complete"
             })
-        
-        # Get the loyalty account
-        account = saga_award.account
-        user_id = account.user_id
-        miles_to_reverse = saga_award.miles_awarded
-        
-        logger.info(f"[SAGA COMPENSATION] 💰 Reversing {miles_to_reverse} miles from user {user_id}")
-        logger.info(f"[SAGA COMPENSATION] 📊 Original award: {saga_award.original_balance} -> {saga_award.new_balance} miles")
-        
-        # Store original balance before reversal
-        original_balance = account.points_balance
-        original_tier = account.tier_status
-        
-        logger.info(f"[SAGA COMPENSATION] 📊 Account before reversal: {original_balance} miles, tier: {original_tier}")
-        
-        # Reverse the miles
-        account.points_balance -= miles_to_reverse
-        if account.points_balance < 0:
-            logger.warning(f"[SAGA COMPENSATION] ⚠️ Preventing negative balance: setting to 0")
-            account.points_balance = 0  # Prevent negative balance
-        account.save()  # This will also update the tier
-        
-        new_tier = account.tier_status
-        tier_changed = original_tier != new_tier
-        
-        if tier_changed:
-            logger.info(f"[SAGA COMPENSATION] 📉 TIER DOWNGRADE due to compensation: {original_tier} -> {new_tier}")
-        
-        # Update SAGA award status
-        saga_award.status = 'REVERSED'
-        saga_award.reversed_at = timezone.now()
-        saga_award.save()
-        logger.info(f"[SAGA COMPENSATION] 💾 Updated SAGA award status to REVERSED")
-        
-        # Create compensation transaction record with enhanced identification
-        comp_transaction = LoyaltyTransaction.objects.create(
-            account=account,
-            transaction_id=f"COMP-{correlation_id[:8]}",
-            transaction_type='adjustment',
-            points_redeemed=miles_to_reverse,
-            amount=0.0,
-            description=f'SAGA Compensation: {compensation_reason} - Reversed {miles_to_reverse} miles'
-        )
-        logger.info(f"[SAGA COMPENSATION] 📝 Created compensation transaction: {comp_transaction.transaction_id}")
+
+        # Use the first record's account (all share the same account for same user)
+        # Refresh from DB to get accurate current balance; lock with select_for_update to prevent race
+        from django.db import transaction as db_transaction
+        with db_transaction.atomic():
+            account = LoyaltyAccount.objects.select_for_update().get(pk=awarded_records[0].account_id)
+            user_id = account.user_id
+
+            # Sum ALL awarded miles across all records (handles both single and round-trip)
+            miles_to_reverse = sum(a.miles_awarded for a in awarded_records)
+            logger.info(f"[SAGA COMPENSATION] 💰 Reversing {miles_to_reverse} total miles from user {user_id} ({len(awarded_records)} award record(s))")
+            for a in awarded_records:
+                logger.info(f"[SAGA COMPENSATION] 📊 Award {a.id}: original={a.original_balance} new={a.new_balance} ({a.miles_awarded} miles)")
+
+            # Store original balance before reversal
+            original_balance = account.points_balance
+            original_tier = account.tier_status
+
+            logger.info(f"[SAGA COMPENSATION] 📊 Account before reversal: {original_balance} miles, tier: {original_tier}")
+
+            # Reverse all miles atomically
+            account.points_balance = max(0, account.points_balance - miles_to_reverse)
+            account.save()
+
+            new_tier = account.tier_status
+            if original_tier != new_tier:
+                logger.info(f"[SAGA COMPENSATION] 📉 TIER DOWNGRADE: {original_tier} -> {new_tier}")
+
+            # Mark ALL awarded records as REVERSED inside the same transaction
+            for a in awarded_records:
+                a.status = 'REVERSED'
+                a.reversed_at = timezone.now()
+                a.save()
+                logger.info(f"[SAGA COMPENSATION] 💾 Marked award {a.id} as REVERSED")
+
+            # Create ONE compensation transaction record for the full reversal
+            comp_transaction = LoyaltyTransaction.objects.create(
+                account=account,
+                transaction_id=f"COMP-{correlation_id[:8]}",
+                transaction_type='adjustment',
+                points_redeemed=miles_to_reverse,
+                amount=0.0,
+                description=f'SAGA Compensation: {compensation_reason} - Reversed {miles_to_reverse} miles ({len(awarded_records)} leg(s))'
+            )
+            logger.info(f"[SAGA COMPENSATION] 📝 Created compensation transaction: {comp_transaction.transaction_id}")
         
         # DIAGNOSTIC: Log compensation transaction details for dashboard debugging
         logger.info(f"[DASHBOARD_DEBUG] Compensation transaction created:")
@@ -391,6 +431,7 @@ def reverse_miles(request):
             "correlation_id": correlation_id,
             "user_id": user_id,
             "miles_reversed": miles_to_reverse,
+            "awards_reversed": len(awarded_records),
             "original_balance": original_balance,
             "new_balance": account.points_balance,
             "message": f"Successfully reversed {miles_to_reverse} miles due to SAGA compensation"

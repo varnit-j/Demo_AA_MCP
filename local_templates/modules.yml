@@ -1,45 +1,17 @@
-- id: remove_miles_ui_display
-  phase: ui_cleanup
-  goal: "Remove miles conversion rate and maximum miles display from transaction page UI"
+- id: loyalty_points_rate_1usd_1point
+  phase: loyalty_rules
+  goal: "Set loyalty earning rate to 1 point per $1"
   mode: code
-  status: pending
+  status: implemented
   outputs:
     files:
-      - apps/loyalty/templates/loyalty/transaction_page.html
-      - apps/loyalty/templates/loyalty/checkout.html
-      - apps/loyalty/templates/loyalty/payment_form.html
-      - apps/loyalty/static/loyalty/js/transaction.js
-      - apps/loyalty/static/loyalty/css/transaction.css
-      - apps/loyalty/views.py
-      - apps/loyalty/context_processors.py
+      - microservices/loyalty-service/loyalty/saga_views.py
   features:
-    - "Remove '1 mile = $0.01' conversion rate display from transaction UI"
-    - "Remove 'Maximum 2240 miles available' text from transaction forms"
-    - "Clean up related CSS styling for miles display elements"
-    - "Update JavaScript to remove miles calculation logic"
-    - "Maintain existing loyalty points functionality"
-  integration:
-    - "Preserve existing loyalty points redemption flow"
-    - "Keep backend loyalty calculations intact"
-    - "Ensure transaction page remains functional"
-  steps:
-    - name: identify_ui_elements
-      mode: architect
-      description: "Locate all UI elements displaying miles conversion and maximum miles text"
-      status: pending
-    - name: remove_template_elements
-      mode: code
-      description: "Remove miles display elements from HTML templates"
-      status: pending
-    - name: cleanup_styles_scripts
-      mode: code
-      description: "Remove related CSS and JavaScript for miles display"
-      status: pending
-    - name: update_context_data
-      mode: code
-      description: "Remove miles-related context data from views"
-      status: pending
-    - name: test_ui_changes
-      mode: debug
-      description: "Verify transaction page functionality after UI cleanup"
-      status: pending
+    - "AwardMiles uses 1:1 ratio for single-flight bookings (points = int(fare * 1.0))"
+    - "AwardMiles uses 1:1 ratio for round-trip bookings (each leg uses points = int(fare_leg * 1.0))"
+    - "Update log messages to reflect the new 1:1 ratio"
+  verification:
+    - "Frontend booking flow verified: UI shows $1 = 1 point credited correctly (e.g., $150 fare -> +150 points)"
+  notes:
+    - "Previous behavior awarded int(fare * 0.5)"
+    - "Change is localized to loyalty service SAGA award logic; no batch scripts used to start services"

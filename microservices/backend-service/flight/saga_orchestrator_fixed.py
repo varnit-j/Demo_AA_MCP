@@ -149,10 +149,19 @@ class BookingOrchestrator:
                             "INTER-SERVICE: Payment authorized. UI should now collect card details / confirm capture."
                         )
                     elif step.name == "MilesLoyalty" and result.get('miles_awarded'):
-                        saga_log_storage.add_log(
-                            correlation_id, step.name, "Loyalty Service", "info",
-                            f"🏆 Miles awarded: {result.get('miles_awarded')} - Balance: {result.get('original_balance')} -> {result.get('new_balance')}"
-                        )
+                        if result.get('is_round_trip') and result.get('flight1_miles') and result.get('flight2_miles'):
+                            f1 = result.get('flight1_miles')
+                            f2 = result.get('flight2_miles')
+                            total = result.get('miles_awarded')
+                            saga_log_storage.add_log(
+                                correlation_id, step.name, "Loyalty Service", "info",
+                                f"🏆 Round trip miles: {f1} (Outbound) + {f2} (Return) = {total} total pts | Balance: {result.get('original_balance')} -> {result.get('new_balance')}"
+                            )
+                        else:
+                            saga_log_storage.add_log(
+                                correlation_id, step.name, "Loyalty Service", "info",
+                                f"🏆 Miles awarded: {result.get('miles_awarded')} | Balance: {result.get('original_balance')} -> {result.get('new_balance')}"
+                            )
                 else:
                     logger.error(f"[SAGA] Step {step.name} failed: {result.get('error', 'Unknown error')}")
                     
@@ -325,9 +334,18 @@ class BookingOrchestrator:
                     
                     # Add specific compensation details (updated step names only)
                     if step.name == "MilesLoyalty" and result.get('miles_reversed'):
+                        reversed_total = result.get('miles_reversed')
+                        orig = result.get('original_balance')
+                        new_bal = result.get('new_balance')
+                        awards_count = result.get('awards_reversed', 1)
+                        if awards_count > 1:
+                            per_leg = reversed_total // awards_count
+                            detail_msg = f"↩️ Round trip miles reversed: {per_leg} (Outbound) + {per_leg} (Return) = {reversed_total} total | Balance: {orig} -> {new_bal}"
+                        else:
+                            detail_msg = f"↩️ Miles reversed: {reversed_total} | Balance: {orig} -> {new_bal}"
                         saga_log_storage.add_log(
                             correlation_id, f"COMPENSATE_{step.name}", "Loyalty Compensation", "info",
-                            f"↩️ Miles reversed: {result.get('miles_reversed')} - Balance: {result.get('original_balance')} -> {result.get('new_balance')}", is_compensation=True
+                            detail_msg, is_compensation=True
                         )
                     elif step.name == "PaymentTransaction" and result.get('authorization_id'):
                         saga_log_storage.add_log(

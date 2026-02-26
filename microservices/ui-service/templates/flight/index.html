@@ -23,12 +23,12 @@
                                         <div class="trip-type-row">
                                             <div class="form-check-inline">
                                                 <label class="form-check-label">
-                                                    <input type="radio" class="form-check-input trip-type" id="one-way" name="TripType" value="1" checked>One-way
+                                                    <input type="radio" class="form-check-input trip-type" id="one-way" name="TripType" value="1" {% if trip_type == '1' %}checked{% endif %}>One-way
                                                 </label>
                                             </div>
                                             <div class="form-check-inline">
                                                 <label class="form-check-label">
-                                                    <input type="radio" class="form-check-input trip-type" id="round-trip" name="TripType" value="2" {% if trip_type == '2' %}checked{% endif %}>Round Trip
+                                                    <input type="radio" class="form-check-input trip-type" id="round-trip" name="TripType" value="2" {% if trip_type != '1' %}checked{% endif %}>Round Trip
                                                 </label>
                                             </div>
                                         </div>
@@ -65,7 +65,7 @@
                                     </div>
                                     <div class="form-field">
                                         <label for="return_date">Return Date: </label>
-                                        <input type="date" name="ReturnDate" min="{{min_date}}" max="{{max_date}}" id="return_date" placeholder="Date" class="form-control mr-sm-2" value="{{return_date}}" {% if trip_type != '2' %} disabled {% endif %}>
+                                        <input type="date" name="ReturnDate" min="{{min_date}}" max="{{max_date}}" id="return_date" placeholder="Date" class="form-control mr-sm-2" value="{{return_date}}" {% if trip_type == '1' %} disabled {% endif %}>
                                     </div>
                                     <div class="form-field">
                                         <label for="seat_class">Class: </label>

@@ -106,17 +106,17 @@
 <!-- Hidden data for JavaScript -->
 <script id="saga-logs-data" type="application/json">{{ saga_logs|safe }}</script>
 
-<div class="saga-header {% if saga_status.status == 'completed' %}success{% elif saga_status.status == 'in_progress' %}progress{% else %}error{% endif %}">
+<div id="saga-page-header" class="saga-header {% if saga_status.status == 'completed' %}success{% elif saga_status.status == 'in_progress' %}progress{% else %}error{% endif %}">
     <div class="container">
         {% if saga_status.status == 'completed' %}
-            <h1><i class="fas fa-check-circle saga-icon"></i> Transaction Successful</h1>
-            <p>Your booking completed successfully. Logs below show each SAGA step.</p>
+            <h1 id="saga-header-title"><i class="fas fa-check-circle saga-icon"></i> Transaction Successful</h1>
+            <p id="saga-header-subtitle">Your booking completed successfully. Logs below show each SAGA step.</p>
         {% elif saga_status.status == 'in_progress' %}
-            <h1><i class="fas fa-spinner fa-spin saga-icon"></i> Transaction In Progress</h1>
-            <p>Your booking is processing. Logs below will update as each step completes.</p>
+            <h1 id="saga-header-title"><i class="fas fa-spinner fa-spin saga-icon"></i> Transaction In Progress</h1>
+            <p id="saga-header-subtitle">Your booking is processing. Logs below will update as each step completes.</p>
         {% else %}
-            <h1><i class="fas fa-exclamation-triangle saga-icon"></i> Transaction Failed</h1>
-            <p>Your booking could not be completed. Click below for details.</p>
+            <h1 id="saga-header-title"><i class="fas fa-exclamation-triangle saga-icon"></i> Transaction Failed</h1>
+            <p id="saga-header-subtitle">Your booking could not be completed. Click below for details.</p>
         {% endif %}
         {% if correlation_id %}
             <div style="background: rgba(255, 255, 255, 0.2); padding: 15px; border-radius: 8px; margin-top: 20px; font-size: 0.9rem;">
@@ -127,16 +127,16 @@
 </div>
 
 <div class="container">
-    <div class="status-card {% if saga_status.status == 'completed' %}success{% elif saga_status.status == 'in_progress' %}progress{% else %}error{% endif %}">
+    <div id="saga-status-card" class="status-card {% if saga_status.status == 'completed' %}success{% elif saga_status.status == 'in_progress' %}progress{% else %}error{% endif %}">
         <div style="display: flex; justify-content: space-between; align-items: center;">
             <div>
                 <h3><i class="fas fa-info-circle"></i> What Happened?</h3>
                 {% if saga_status.status == 'completed' %}
-                    <p>Your booking was completed successfully across Backend, Payment, and Loyalty services.</p>
+                    <p id="saga-what-happened-text">Your booking was completed successfully across Backend, Payment, and Loyalty services.</p>
                 {% elif saga_status.status == 'in_progress' %}
-                    <p>Your booking is in progress. The log stream below shows each microservice step as it completes.</p>
+                    <p id="saga-what-happened-text">Your booking is in progress. The log stream below shows each microservice step as it completes.</p>
                 {% else %}
-                    <p>Your booking attempt failed during the transaction process. Your account remains unchanged and no charges were applied.</p>
+                    <p id="saga-what-happened-text">Your booking attempt failed during the transaction process. Your account remains unchanged and no charges were applied.</p>
                 {% endif %}
             </div>
             <button class="saga-logs-toggle" onclick="toggleSagaLogs()">
@@ -155,8 +155,9 @@
         </div>
     </div>
 
-    <div class="status-card">
+    <div id="saga-what-we-did-card" class="status-card">
         <h3><i class="fas fa-check-circle"></i> What We Did</h3>
+        <div id="saga-what-we-did-content">
         {% if saga_status.status == 'completed' %}
             <p>Your booking succeeded. The system coordinated all services using the SAGA pattern.</p>
             <ul>
@@ -176,6 +177,7 @@
                 <li><strong>System Recovery:</strong> All services are ready for your next booking attempt</li>
             </ul>
         {% endif %}
+        </div>
     </div>
 
     <div class="text-center" style="margin: 40px 0;">

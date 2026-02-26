@@ -10,22 +10,20 @@
 - Django 3.1+
 - SQLite (included)
 
-### Start All Services (One Command)
+### Start All Services (Individual Commands / Python 3.12)
 ```bash
-# Start all microservices individually
-python microservices/start_python312.py
+# Start each microservice in its own terminal (Python 3.12)
 
-# Or start manually:
-# Backend Service (Port 8001)
+# Terminal 1: Backend Service (Port 8001)
 cd microservices/backend-service && python3.12 manage.py runserver 127.0.0.1:8001
 
-# Payment Service (Port 8002) 
+# Terminal 2: Payment Service (Port 8002)
 cd microservices/payment-service && python3.12 manage.py runserver 127.0.0.1:8002
 
-# Loyalty Service (Port 8003)
+# Terminal 3: Loyalty Service (Port 8003)
 cd microservices/loyalty-service && python3.12 manage.py runserver 127.0.0.1:8003
 
-# UI Service (Port 8000)
+# Terminal 4: UI Service (Port 8000)
 cd microservices/ui-service && python3.12 manage.py runserver 127.0.0.1:8000
 ```
 
@@ -175,22 +173,20 @@ pip install -r requirements.txt
 python database_manager.py setup
 ```
 
-### 4. Start Services
+### 4. Start Services (Individual Commands / Python 3.12)
 ```bash
-# Start all services (recommended)
-python microservices/start_python312.py
+# Start each microservice in its own terminal (Python 3.12)
 
-# Or start individually:
-# Terminal 1: Backend Service
+# Terminal 1: Backend Service (Port 8001)
 cd microservices/backend-service && python3.12 manage.py runserver 127.0.0.1:8001
 
-# Terminal 2: Payment Service
+# Terminal 2: Payment Service (Port 8002)
 cd microservices/payment-service && python3.12 manage.py runserver 127.0.0.1:8002
 
-# Terminal 3: Loyalty Service
+# Terminal 3: Loyalty Service (Port 8003)
 cd microservices/loyalty-service && python3.12 manage.py runserver 127.0.0.1:8003
 
-# Terminal 4: UI Service
+# Terminal 4: UI Service (Port 8000)
 cd microservices/ui-service && python3.12 manage.py runserver 127.0.0.1:8000
 ```
 

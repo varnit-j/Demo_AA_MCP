@@ -1,0 +1,28 @@
+[run]
+source =
+    flight
+    apps
+    payments
+    capstone
+
+omit =
+    */migrations/*
+    */management/commands/*
+    */admin.py
+    */__init__.py
+    */apps.py
+    */wsgi.py
+    */asgi.py
+
+[report]
+# Fail if below these thresholds
+fail_under = 65
+show_missing = True
+skip_covered = False
+precision = 1
+
+[html]
+directory = htmlcov/
+
+[xml]
+output = test/coverage.xml

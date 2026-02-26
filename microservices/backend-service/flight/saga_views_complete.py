@@ -885,12 +885,27 @@ def start_booking_saga_async(request):
             try:
                 orchestrator = get_orchestrator()
                 if orchestrator:
+                    # Resolve flight_id_2 fare for round-trip (same logic as sync start_booking_saga)
+                    flight_id_2 = data.get('flight_id_2')
+                    flight_fare_2 = 0
+                    if flight_id_2:
+                        try:
+                            flight_2 = Flight.objects.get(id=flight_id_2)
+                            flight_fare_2 = float(flight_2.economy_fare)
+                            logger.info(f"[SAGA ASYNC] Round trip detected - flight_id_2: {flight_id_2}, flight_fare_2: {flight_fare_2}")
+                        except Flight.DoesNotExist:
+                            logger.warning(f"[SAGA ASYNC] Flight 2 ID {flight_id_2} not found - treating as single flight")
+                            flight_id_2 = None
+                            flight_fare_2 = 0
+
                     booking_data = {
                         'flight_id': flight_id,
+                        'flight_id_2': flight_id_2,
                         'user_id': data.get('user_id', 1),
                         'passengers': passengers,
                         'contact_info': contact_info,
                         'flight_fare': float(flight.economy_fare),
+                        'flight_fare_2': flight_fare_2,
                         'correlation_id': correlation_id,
                         'simulate_reserveseat_fail': data.get('simulate_reserveseat_fail', False),
                         'simulate_authorizepayment_fail': data.get('simulate_authorizepayment_fail', False),

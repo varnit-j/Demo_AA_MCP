@@ -73,6 +73,10 @@ class Order(models.Model):
     def __str__(self):
         return f"Order {self.order_number} - {self.user.username} ({self.status})"
     
+    @property
+    def is_hybrid_payment(self):
+        return self.payment_method == 'hybrid'
+
     def save(self, *args, **kwargs):
         if not self.order_number:
             timestamp = timezone.now().strftime('%Y%m%d')
