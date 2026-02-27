@@ -1,0 +1,17 @@
+- id: loyalty_points_rate_1usd_1point
+  phase: loyalty_rules
+  goal: "Set loyalty earning rate to 1 point per $1"
+  mode: code
+  status: implemented
+  outputs:
+    files:
+      - microservices/loyalty-service/loyalty/saga_views.py
+  features:
+    - "AwardMiles uses 1:1 ratio for single-flight bookings (points = int(fare * 1.0))"
+    - "AwardMiles uses 1:1 ratio for round-trip bookings (each leg uses points = int(fare_leg * 1.0))"
+    - "Update log messages to reflect the new 1:1 ratio"
+  verification:
+    - "Frontend booking flow verified: UI shows $1 = 1 point credited correctly (e.g., $150 fare -> +150 points)"
+  notes:
+    - "Previous behavior awarded int(fare * 0.5)"
+    - "Change is localized to loyalty service SAGA award logic; no batch scripts used to start services"

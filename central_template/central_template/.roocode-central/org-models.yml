@@ -1,0 +1,25 @@
+# .roocode-central/org-models.yml
+meta:
+  locked: true
+  managed_by: "AI Platform Team"
+  description: "Central model and gateway configuration. Do not modify."
+
+models:
+  allowed: [openai, claude, deepseek, gemini]
+  default: openai
+
+gateways:
+  openai:
+    base_url: ${ROO_OPENAI_BASE}
+    headers:
+      X-Corp-Tenant: ${CORP_TENANT}
+      X-Env: ${ENVIRONMENT}
+  claude:
+    base_url: ${ROO_CLAUDE_BASE}
+    headers:
+      X-Corp-Tenant: ${CORP_TENANT}
+
+rules:
+  enforce_internal_gateway: true
+  block_direct_provider_calls: true
+  allow_public_experimental_models: false

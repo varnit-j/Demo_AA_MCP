@@ -1,0 +1,21 @@
+# .roocode-central/org-data-policy.yml
+meta:
+  locked: true
+  managed_by: "Security Team"
+  description: "Data usage and safety rules for AI-assisted development."
+
+data_policy:
+  allow_production_data_in_prompts: false
+  allow_pii_in_prompts: false
+  allow_secrets_in_prompts: false
+  guidance_for_devs:
+    Never paste real customer data, secrets, or logs with PII into Roo Code.
+    Use schemas, fake data, or masked examples only.
+
+redaction:
+  enforce_gateway_redaction: true
+  redact_fields:
+    - email
+    - phone
+    - account_number
+    - national_id

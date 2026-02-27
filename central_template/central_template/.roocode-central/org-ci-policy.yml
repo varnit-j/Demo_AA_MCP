@@ -1,0 +1,17 @@
+# .roocode-central/org-ci-policy.yml
+meta:
+  locked: true
+  managed_by: "DevOps Team"
+  description: "Required CI checks and merge conditions."
+
+ci:
+  required_checks:
+    - lint
+    - unit_tests
+    - integration_tests
+    - sast_scan
+    - dependency_scan
+    - secret_scan
+    - mcps_policy_scan
+  minimum_approvals: 1
+  block_merge_on_failure: true

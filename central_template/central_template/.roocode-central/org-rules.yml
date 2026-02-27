@@ -1,0 +1,31 @@
+# .roocode-central/org-rules.yml
+meta:
+  locked: true
+  managed_by: "AI Platform Team"
+  description: "Organization wide generation and review rules."
+
+generation:
+  require_review: true
+  max_tokens: 2000
+  allow_file_overwrite: false
+  file_header_required: true
+  file_header_template: |
+    /*
+      Generated-by: Roo Code
+      Org-Rules-Version: {{org_rules_version}}
+      Model: {{model}}
+      Generated-on: {{timestamp}}
+      Review-required: true
+    */
+
+permissions:
+  allow_roocode_to_modify:
+    - src/**
+    - services/**
+    - tests/**
+    - features/**
+  disallow_roocode_to_modify:
+    - .roocode-central/**
+    - .github/workflows/**
+    - infra/**
+    - secrets/**

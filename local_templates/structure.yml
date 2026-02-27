@@ -1,0 +1,477 @@
+
+# local_templates/structure.yml
+# =============================================================================
+#  PRODUCTION-LEVEL FOLDER STRUCTURE — MICROSERVICES REFERENCE
+#  Project   : AA Flight Booking — Microservices Platform
+#  Stack     : Python 3.12 · Django · REST · SAGA Orchestration
+#  Author    : Senior Architect Reference  (Feb 2026)
+#
+#  RULES FOR ALL DEVELOPERS
+#  ─────────────────────────────────────────────────────────────────────────────
+#  1. Every service is fully self-contained — no shared code between services.
+#  2. Inter-service calls ONLY via HTTP REST. Never import across services.
+#  3. Each service owns its own DB, migrations, requirements.txt, and tests.
+#  4. Business logic lives ONLY in service.py / saga_*.py — never in views.
+#  5. Views are thin: validate input → call service → return JsonResponse.
+#  6. Every new endpoint MUST have a corresponding test in tests.py.
+#  7. No new file may be added outside the structure defined here without
+#     explicit architect sign-off in the PR description.
+#  8. saga_views.py = SAGA step handlers (stateless, idempotent).
+#     saga_compensation.py = rollback handlers (must be idempotent).
+#     saga_orchestrator*.py = BACKEND-SERVICE ONLY — never in other services.
+#  9. models.py = DB schema only. No business logic. No HTTP calls.
+# 10. Keep pytest.ini per-service. Run with: python3.12 -m pytest
+# =============================================================================
+
+version: 2
+project: "AA-Flight-Booking-Microservices"
+python: "3.12"
+
+description: >
+  Four independently deployable Django microservices for airline flight booking.
+  Services communicate via HTTP REST on dedicated ports.
+  Transactional consistency is enforced by a SAGA orchestration pattern
+  with compensating transactions. Each service owns its own database,
+  migrations, tests, and deployment config.
+
+# =============================================================================
+#  REPOSITORY ROOT
+# =============================================================================
+repository_root:
+  description: "Top-level repo — contains only microservices and shared config."
+  allowed_at_root:
+    - microservices/          # all four services live here
+    - central_template/       # shared Jinja2/HTML base templates (read-only reference)
+    - local_templates/        # architect reference files (this file, modules.yml)
+    - .quarantine/            # archived monolith — DO NOT touch
+    - .gitignore
+    - LICENSE
+    - README.md
+  forbidden_at_root:          # any of these appearing at root = immediate PR rejection
+    - manage.py
+    - settings.py
+    - models.py
+    - requirements.txt
+    - db.sqlite3
+    - "*.bat"
+    - "*.sh"
+
+
+# =============================================================================
+#  SERVICE REGISTRY
+# =============================================================================
+services:
+
+  # ---------------------------------------------------------------------------
+  - id: backend-service
+    port: 8001
+    settings_module: backend.settings
+    purpose: >
+      Core booking engine. Owns flight data, seat inventory, ticket records,
+      and SAGA orchestration. The only service that drives the SAGA workflow.
+    # ── Canonical folder layout ──────────────────────────────────────────────
+    structure:
+      microservices/backend-service/
+        manage.py                        # Django entry point — do not modify
+        pytest.ini                       # DJANGO_SETTINGS_MODULE = backend.settings
+        requirements.txt                 # service-scoped dependencies only
+        .env.example                     # template for local secrets
+        db.sqlite3                       # local dev DB — never commit in prod
+
+        backend/                         # Django project package
+          __init__.py
+          settings.py                    # base settings; env-vars for secrets
+          settings_prod.py               # production overrides (DEBUG=False, ALLOWED_HOSTS, etc.)
+          urls.py                        # root URL dispatcher
+          wsgi.py
+          asgi.py
+
+        flight/                          # Primary Django app
+          __init__.py
+          apps.py
+          admin.py
+          models.py                      # DB schema only — NO business logic
+          urls.py                        # all routes under /api/
+          constants.py                   # magic strings, status codes, enums
+          utils.py                       # pure helper functions (no DB, no HTTP)
+
+          # ── Request handlers (thin — validate → service → respond) ─────────
+          simple_views.py                # CRUD endpoints: search, book, tickets, health
+          api_views.py                   # versioned API views if needed
+
+          # ── SAGA layer (backend-service OWNS orchestration) ────────────────
+          saga_orchestrator_fixed.py     # BookingOrchestrator — drives all SAGA steps
+          saga_views_complete.py         # HTTP handlers for SAGA step/status endpoints
+          saga_log_storage.py            # Persistent + in-memory SAGA log store
+          failed_booking_handler.py      # Creates FAILED ticket records on rollback
+
+          # ── Django management commands ─────────────────────────────────────
+          management/
+            __init__.py
+            commands/
+              __init__.py
+              import_flights_from_csv.py
+              add_aa_flights.py
+              create_flight_seats.py
+
+          # ── Migrations ────────────────────────────────────────────────────
+          migrations/
+            __init__.py
+            0001_initial.py
+            # ... numbered sequentially, never edited after merge
+
+          # ── Static assets (service-specific) ──────────────────────────────
+          static/
+            css/
+            js/
+            img/
+
+          # ── Tests (all in one file per service; split if > 500 lines) ──────
+          tests.py                       # 95%+ coverage target; python3.12 -m pytest
+
+    # ── Key models ────────────────────────────────────────────────────────────
+    models:
+      - User            # AbstractUser extension
+      - Place           # Airport / city
+      - Flight          # Schedule + fares
+      - Seat            # Seat inventory per flight
+      - SeatReservation # Holds seat during SAGA
+      - Passenger       # Booking passenger detail
+      - Ticket          # Final booking record (has saga_correlation_id)
+      - SagaTransaction # SAGA step audit trail
+      - SagaPaymentAuthorization
+      - SagaMilesAward
+      - SagaLogEntry    # Structured SAGA log with to_dict()
+
+    # ── SAGA steps owned by this service ─────────────────────────────────────
+    saga_steps:
+      step_1_award_miles:
+        calls: "loyalty-service POST /award-miles/"
+        compensation: "loyalty-service POST /reverse-miles/"
+      step_2_authorize_payment:
+        calls: "payment-service POST /api/saga/authorize-payment/"
+        compensation: "payment-service POST /api/saga/cancel-payment/"
+      step_3_confirm_booking:
+        local: true
+        action: "Create/update Ticket record to BOOKED"
+        compensation: "Set Ticket to FAILED + store reason"
+      step_4_confirm_reservation:
+        local: true
+        action: "Mark SeatReservation as CONFIRMED"
+        compensation: "Release seat reservation"
+
+    # ── Environment variables ─────────────────────────────────────────────────
+    env:
+      - DJANGO_SECRET_KEY
+      - DJANGO_DEBUG
+      - DJANGO_ALLOWED_HOSTS
+      - LOYALTY_SERVICE_URL       # http://localhost:8003
+      - PAYMENT_SERVICE_URL       # http://localhost:8002
+
+
+  # ---------------------------------------------------------------------------
+  - id: loyalty-service
+    port: 8003
+    settings_module: loyalty.settings
+    purpose: >
+      Loyalty points ledger. Awards and reverses miles. Maintains tier status.
+      Provides transaction history. Stateless SAGA participant — no orchestration.
+    structure:
+      microservices/loyalty-service/
+        manage.py
+        pytest.ini                       # DJANGO_SETTINGS_MODULE = loyalty.settings
+        requirements.txt
+        .env.example
+        db.sqlite3
+
+        loyalty/                         # Single Django app (app == project here)
+          __init__.py
+          apps.py
+          admin.py
+          models.py                      # LoyaltyAccount, LoyaltyTransaction, SagaMilesAward
+          urls.py                        # all routes registered here
+          views.py                       # loyalty_status, add_transaction_points, history
+          service.py                     # points calculation logic — called by views
+          saga_views.py                  # award_miles endpoint — idempotent SAGA participant
+          saga_compensation.py           # reverse_miles endpoint — idempotent rollback
+          settings.py                    # project settings
+          wsgi.py
+
+          migrations/
+            __init__.py
+            0001_initial.py
+
+          tests.py                       # covers models + views + saga_views + compensation
+
+    models:
+      - LoyaltyAccount      # user_id, points_balance, tier_status; save() auto-tiers
+      - LoyaltyTransaction  # earned / redeemed / adjustment records
+      - SagaMilesAward      # idempotency record per correlation_id (AWARDED / REVERSED)
+
+    tier_thresholds:
+      Regular:             0
+      Gold:            25000
+      Platinum:        50000
+      Platinum_Pro:    75000
+      Executive_Plat: 100000
+      ConciergeKey:   125000
+
+    api_contract:
+      - "GET  /loyalty/status/?user_id=X"
+      - "POST /loyalty/add-points/"
+      - "GET  /loyalty/transactions/<user_id>/"
+      - "POST /award-miles/                   ← SAGA step (idempotent)"
+      - "POST /reverse-miles/                 ← SAGA compensation (idempotent)"
+      - "POST /api/saga/award-miles/          ← legacy alias"
+      - "POST /api/saga/reverse-miles/        ← legacy alias"
+
+    idempotency_rule: >
+      award_miles checks SagaMilesAward.objects.filter(correlation_id) before
+      writing. If record exists with status=AWARDED, return cached result.
+      reverse_miles checks for AWARDED record; if already REVERSED, no-op.
+
+    env:
+      - DJANGO_SECRET_KEY
+      - DJANGO_DEBUG
+      - DJANGO_ALLOWED_HOSTS
+
+
+  # ---------------------------------------------------------------------------
+  - id: payment-service
+    port: 8002
+    settings_module: payment.settings
+    purpose: >
+      Payment processing via Stripe and mock authorization for SAGA.
+      Stateless SAGA participant — no orchestration. Owns payment records.
+    structure:
+      microservices/payment-service/
+        manage.py
+        pytest.ini                       # DJANGO_SETTINGS_MODULE = payment.settings
+        requirements.txt
+        .env.example
+        db.sqlite3
+        Dockerfile                       # containerized for prod
+
+        payment/                         # Single Django app
+          __init__.py
+          apps.py
+          admin.py
+          models.py                      # PaymentAuthorization (AUTHORIZED/CANCELLED/EXPIRED)
+          urls.py
+          views.py                       # process_payment, stripe_webhook, payment_status,
+                                         # process_refund, validate_card, health_check
+          saga_views.py                  # authorize_payment, cancel_payment (SAGA participant)
+          saga_compensation.py           # cancel_payment_complete (idempotent rollback)
+          settings.py
+          wsgi.py
+
+          migrations/
+            __init__.py
+            0001_initial.py
+
+          tests.py                       # covers models + saga + views (Stripe mocked)
+
+    models:
+      - PaymentAuthorization    # correlation_id, authorization_id (unique), amount,
+                                # flight_fare, other_charges, currency, status, payment_method
+
+    api_contract:
+      - "POST /api/payments/process/              ← Stripe PaymentIntent"
+      - "POST /api/payments/stripe/webhook/       ← Stripe webhook"
+      - "GET  /api/payments/<payment_id>/"
+      - "POST /api/payments/refund/"
+      - "POST /api/banking/validate/"
+      - "GET  /health/"
+      - "POST /api/saga/authorize-payment/        ← SAGA step"
+      - "POST /api/saga/cancel-payment/           ← SAGA compensation"
+
+    url_ordering_note: >
+      /api/payments/refund/ MUST be declared BEFORE /api/payments/<payment_id>/
+      in urls.py otherwise the catch-all will shadow the refund route.
+
+    env:
+      - DJANGO_SECRET_KEY
+      - DJANGO_DEBUG
+      - DJANGO_ALLOWED_HOSTS
+      - STRIPE_SECRET_KEY
+      - STRIPE_WEBHOOK_SECRET
+
+
+  # ---------------------------------------------------------------------------
+  - id: ui-service
+    port: 8000
+    settings_module: ui.settings
+    purpose: >
+      Browser-facing Django service. Renders HTML templates and proxies all
+      data requests to backend-service. No direct DB calls for business data —
+      everything goes through backend-service REST APIs.
+    structure:
+      microservices/ui-service/
+        manage.py
+        pytest.ini                       # DJANGO_SETTINGS_MODULE = ui.settings
+        requirements.txt
+        .env.example
+        db.sqlite3                       # sessions + local UI state only
+
+        ui/                              # Single Django app
+          __init__.py
+          apps.py
+          admin.py
+          models.py                      # UI-local models only (sessions, preferences)
+          urls.py
+          views.py                       # ALL page views — proxies to backend-service
+          loyalty_tracker.py             # Wraps loyalty-service API calls
+          saga_booking.py                # Drives booking flow via backend-service SAGA
+          timezone_utils.py              # Display timezone helpers
+          settings.py
+          wsgi.py
+
+          templates/                     # HTML templates
+            base.html                    # master layout with nav, head, scripts
+            index.html
+            search_results.html
+            booking.html
+            payment.html
+            confirmation.html
+            my_tickets.html
+            loyalty/
+              dashboard.html
+              history.html
+
+          static/                        # UI-service static assets
+            css/
+              main.css
+            js/
+              booking.js
+              payment.js
+            img/
+
+          templatetags/
+            __init__.py
+            currency_filters.py         # custom template filters
+
+          migrations/
+            __init__.py
+
+          tests.py
+
+    proxy_rule: >
+      ui-service MUST NOT query Flight, Ticket, or any backend model directly.
+      Use call_backend_api() helper in views.py for all data.
+      Use call_loyalty_service() helper in loyalty_tracker.py for points data.
+
+    env:
+      - DJANGO_SECRET_KEY
+      - DJANGO_DEBUG
+      - DJANGO_ALLOWED_HOSTS
+      - BACKEND_SERVICE_URL             # http://localhost:8001
+      - LOYALTY_SERVICE_URL             # http://localhost:8003
+      - PAYMENT_SERVICE_URL             # http://localhost:8002
+
+
+# =============================================================================
+#  CROSS-CUTTING PATTERNS (apply to ALL services)
+# =============================================================================
+patterns:
+
+  layering:
+    description: "Strict layer separation — violations blocked at PR review."
+    layers:
+      urls.py:
+        responsibility: "Route URL patterns to view functions. Nothing else."
+        forbidden: ["DB queries", "business logic", "HTTP calls to other services"]
+
+      views.py / *_views.py:
+        responsibility: "Parse request → call service layer → return JsonResponse/render."
+        max_lines_per_view_function: 40
+        forbidden: ["ORM queries beyond get_or_create", "Stripe calls", "HTTP to services"]
+
+      service.py / saga_*.py:
+        responsibility: "All business logic, calculations, inter-service calls."
+        must_be: ["testable without HTTP", "idempotent for SAGA steps"]
+
+      models.py:
+        responsibility: "DB schema, field definitions, __str__, simple @property."
+        forbidden: ["HTTP calls", "business logic", "imports from views/service"]
+
+      tests.py:
+        target_coverage: "95%"
+        required_cases: ["happy path", "error/missing input", "SAGA failure", "idempotency"]
+
+  saga_contract:
+    description: "Every SAGA step and compensation must satisfy these rules."
+    rules:
+      - "Accept correlation_id in request body — never generate it inside the handler."
+      - "Check for existing record before writing (idempotency guard)."
+      - "Return {success: true/false, ...} JSON — never raise uncaught exceptions."
+      - "Compensation handlers return success:true even when there is nothing to undo."
+      - "simulate_failure flag must be honoured for integration testing."
+
+  error_handling:
+    http_client_errors:   "Return 4xx with {error: '<reason>'}"
+    http_server_errors:   "Return 5xx with {error: '<reason>'}; log full traceback"
+    saga_step_errors:     "Return {success: false, error: '<reason>'}"
+    never:                "Raise unhandled exceptions from any view function"
+
+  testing:
+    runner:        "python3.12 -m pytest"
+    per_service:   "cd microservices/<service> && python3.12 -m pytest --cov=<app> --cov-report=term-missing"
+    stripe_mocking: "Always use unittest.mock.patch for stripe.* calls in tests"
+    fixture_rule:   "Use Django TestCase + in-test DB setup. No shared fixtures files."
+
+  naming_conventions:
+    views:         "<resource>_<action>  e.g. flight_search, book_flight"
+    saga_steps:    "<verb>_<resource>    e.g. award_miles, authorize_payment"
+    compensation:  "<verb>_<resource>_<qualifier>  e.g. reverse_miles, cancel_payment"
+    models:        "PascalCase singular  e.g. LoyaltyAccount, SagaMilesAward"
+    url_names:     "snake_case           e.g. saga_award_miles, health_check"
+    env_vars:      "SCREAMING_SNAKE_CASE e.g. LOYALTY_SERVICE_URL"
+
+  file_size_limits:
+    views_file:       500   # lines — split into simple_views.py + saga_views_complete.py if exceeded
+    service_file:     400   # lines
+    models_file:      300   # lines
+    tests_file:       800   # lines — split into test_models.py + test_views.py if exceeded
+
+
+# =============================================================================
+#  CI / DEPLOYMENT HOOKS
+# =============================================================================
+ci:
+  per_service_checks:
+    - "python3.12 -m pytest --cov=<app> --cov-fail-under=90"
+    - "python3.12 manage.py migrate --check"
+    - "python3.12 manage.py makemigrations --check --dry-run"
+
+  run_order:
+    - backend-service    # port 8001  (orchestrator — start first)
+    - payment-service    # port 8002
+    - loyalty-service    # port 8003
+    - ui-service         # port 8000  (start last — depends on all others)
+
+  start_commands:
+    backend:   "cd microservices/backend-service  && python3.12 manage.py runserver 127.0.0.1:8001"
+    payment:   "cd microservices/payment-service  && python3.12 manage.py runserver 127.0.0.1:8002"
+    loyalty:   "cd microservices/loyalty-service  && python3.12 manage.py runserver 127.0.0.1:8003"
+    ui:        "cd microservices/ui-service       && python3.12 manage.py runserver 127.0.0.1:8000"
+
+
+# =============================================================================
+#  WHAT DOES NOT BELONG IN MICROSERVICES (quarantined)
+# =============================================================================
+quarantined:
+  location: ".quarantine/monolith_20260227/"
+  description: >
+    Original monolith Django app. Kept for reference only.
+    Nothing from this directory may be imported or copied into microservices.
+  contents:
+    - capstone/            # monolith settings
+    - flight/              # monolith views/models
+    - apps/                # monolith loyalty/orders/banking/payments
+    - payments/            # monolith Stripe views
+    - manage.py
+    - db.sqlite3
+    - requirements.txt
+    - test/
+    - scripts/
+    - Data/

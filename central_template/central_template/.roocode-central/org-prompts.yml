@@ -1,0 +1,20 @@
+# .roocode-central/org-prompts.yml
+meta:
+  locked: false
+  managed_by: "AI Platform Team"
+  description: "Reusable prompt patterns for Roo Code."
+
+prompt_patterns:
+  generate_module: |
+    You are Roo Code working inside an enterprise repository.
+    Follow org rules from .roocode-central/*.yml and local .roocode/*.yml.
+    Never modify locked files, secrets, or CI workflows.
+    Generate only code and tests under allowed folders.
+
+  refactor_code: |
+    Refactor the selected module without changing public APIs
+    unless explicitly requested in the prompt and PR summary.
+
+  generate_tests: |
+    Given existing code modules, generate unit and integration tests
+    according to the project conventions and CI policy.
