@@ -1,0 +1,38 @@
+{
+  "key": "SCRUM-1",
+  "id": "10000",
+  "url": "https://varnit-coforge.atlassian.net/browse/SCRUM-1",
+  "summary": "Update Loyalty Points Calculation Logic",
+  "issue_type": "Task",
+  "project": {
+    "key": "SCRUM",
+    "name": "AA_Demo"
+  },
+  "status": "In Progress",
+  "assignee": null,
+  "description": "The current loyalty module credits 1 point for every 1 dollar spent. Business has updated the reward policy and now requires the system to credit 0.5 points for every 1 dollar spent. Developer needs to update the calculation logic wherever points are computed.",
+  "scope_requirements": {
+    "formula_change": {
+      "old": "points = amount * 1",
+      "new": "points = amount * 0.5"
+    },
+    "applies_to": [
+      "Transaction processing logic",
+      "Loyalty service/microservice",
+      "Any APIs returning calculated points",
+      "Any UI/API responses showing points (if handled in backend)"
+    ],
+    "additional_requirements": [
+      "Ensure historical transactions remain unchanged",
+      "Apply consistent rounding (follow existing rounding rule in the service)",
+      "Update relevant unit tests and integration tests",
+      "Validate by running sample transactions with QA"
+    ]
+  },
+  "acceptance_criteria": [
+    "Loyalty system credits 0.5 points per dollar for all new transactions",
+    "All backend services reflect the updated calculation",
+    "No change to previously stored point balances",
+    "Test cases updated and passing"
+  ]
+}

@@ -161,12 +161,12 @@ class AddTransactionPointsViewTest(TestCase):
         self.assertEqual(r.status_code, 200)
         data = r.json()
         self.assertTrue(data["success"])
-        self.assertEqual(data["points_earned"], 150)
+        self.assertEqual(data["points_earned"], 75)  # 150 * 0.5 = 75
 
-    def test_uses_one_to_one_ratio(self):
+    def test_uses_half_point_ratio(self):
         r = self._post({"user_id": "PAY_U2", "amount": 75.9, "transaction_id": "T_002"})
         self.assertEqual(r.status_code, 200)
-        self.assertEqual(r.json()["points_earned"], 75)
+        self.assertEqual(r.json()["points_earned"], 37)  # int(75.9 * 0.5) = 37
 
     def test_creates_account_if_not_exists(self):
         r = self._post({"user_id": "NEW_PAY", "amount": 50.0})
@@ -182,7 +182,7 @@ class AddTransactionPointsViewTest(TestCase):
         self._post({"user_id": "ACC_U1", "amount": 100.0})
         self._post({"user_id": "ACC_U1", "amount": 200.0})
         account = LoyaltyAccount.objects.get(user_id="ACC_U1")
-        self.assertEqual(account.points_balance, 300)
+        self.assertEqual(account.points_balance, 150)  # (100 + 200) * 0.5 = 150
 
 
 class GetTransactionHistoryViewTest(TestCase):
