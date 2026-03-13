@@ -47,7 +47,7 @@ def loyalty_status(request):
 @csrf_exempt
 @require_http_methods(["POST"])
 def add_transaction_points(request):
-    """Add points for a transaction (1 dollar = 1 point)"""
+    """Add points for a transaction (1 dollar = 0.5 points)"""
     try:
         data = json.loads(request.body)
         user_id = str(data.get('user_id', '1'))
@@ -57,9 +57,9 @@ def add_transaction_points(request):
         print(f"[DEBUG] Received transaction data: {data}")
         print(f"[DEBUG] Transaction amount: ${transaction_amount}")
         
-        # Calculate points: 1 dollar = 1 point (as requested)
-        points_earned = int(transaction_amount)
-        print(f"[DEBUG] Points calculation: ${transaction_amount} = {points_earned} points (1:1 ratio)")
+        # Calculate points: 0.5 points per dollar (SCRUM-1)
+        points_earned = int(transaction_amount * 0.5)
+        print(f"[DEBUG] Points calculation: ${transaction_amount} = {points_earned} points (0.5:1 ratio)")
         
         # Get or create loyalty account
         account, created = LoyaltyAccount.objects.get_or_create(user_id=user_id)
