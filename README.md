@@ -15,16 +15,7 @@
 # Start each microservice in its own terminal (Python 3.12)
 
 # Terminal 1: Backend Service (Port 8001)
-cd microservices/backend-service && python3.12 manage.py runserver 127.0.0.1:8001
-
-# Terminal 2: Payment Service (Port 8002)
-cd microservices/payment-service && python3.12 manage.py runserver 127.0.0.1:8002
-
-# Terminal 3: Loyalty Service (Port 8003)
-cd microservices/loyalty-service && python3.12 manage.py runserver 127.0.0.1:8003
-
-# Terminal 4: UI Service (Port 8000)
-cd microservices/ui-service && python3.12 manage.py runserver 127.0.0.1:8000
+er
 ```
 
 ### Access Application

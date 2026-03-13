@@ -12,7 +12,13 @@ env.bak/
 venv.bak/
 proxy_service - Copy/
 
-# Database files
-*.sqlite3
-db.sqlite3
-*.db
+# # Database files
+# *.sqlite3
+# db.sqlite3
+# *.db
+
+# Exclude folders not intended for this repo
+.quarantine/
+central_template/
+local_templates/
+Story/
